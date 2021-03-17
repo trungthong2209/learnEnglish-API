@@ -4,7 +4,7 @@ import HttpStatus from "../Helper/HttpStatus.js";
 export default class Register {
     static register(data) {
         let promise = new Promise((resolve, reject) => {
-            User.findOne({ email: data.email }).then((err, doc) => {
+            User.findOne({ email: data.email }).then((doc) => {
                     if (doc == undefined) {
                         let newUser = new User(data);
                         bcrypt.hash(newUser.password, 10).then((hashedPassword) => {

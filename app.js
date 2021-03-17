@@ -9,6 +9,7 @@ const __dirname = path.resolve();
 dotenv.config()
 import MongoHelper from './Helper/MongoHelper.js';
 import Login from "./routes/Login.js"
+import Frame from "./routes/Frame.js"
 var app = express();
 
 app.set('views', path.join(__dirname, 'views'));
@@ -24,6 +25,9 @@ MongoHelper();
 
 //route
 app.use('/', Login);
+app.use('/frame', Frame);
+
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

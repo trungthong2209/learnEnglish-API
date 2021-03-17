@@ -6,7 +6,7 @@ export default class Login {
     static checkLogin(data) {
         let promise = new Promise((resolve, reject) => {
             if (data.email && data.password) {
-                User.findOne({ email: data.email }).then((user, err) => {
+                User.findOne({ email: data.email }).then((user) => {
                     if (user != undefined) {
                         bcrypt.compare(data.password, user.password).then((isMath) => {
                             if (isMath) {
@@ -21,7 +21,6 @@ export default class Login {
                                     process.env.AUTH0_APP_SECRET,
                                     (err, token) => {
                                         if (!err) {
-                                            console.log(token)
                                             let httpStatus = new HttpStatus(HttpStatus.OK, user);
                                             resolve(httpStatus);
                                         } else {
