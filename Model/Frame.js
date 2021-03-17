@@ -8,6 +8,6 @@ let Frame = new mongoose.Schema({
     timeUpdate: { type: Date },
     action: { type: Boolean, default: true },
 });
-User.index({ 'userCreate': 1, 'timeCreate': 1 })
+Frame.index({ 'userCreate': 1, 'timeCreate': 1 })
 
 export default mongoose.model('Frames', Frame)

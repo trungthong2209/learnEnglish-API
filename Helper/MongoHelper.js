@@ -1,6 +1,4 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv'
-dotenv.config()
 export default async function MongoHelper(){
      try {
           await mongoose.connect(process.env.DATABASE_URL, {
@@ -9,12 +7,12 @@ export default async function MongoHelper(){
             useCreateIndex: true,
             useFindAndModify: false
           }).then((serverDB) => {
-                console.log("Server has been connected to database successfully ")
+              console.log("Server has been connected to " + serverDB.connections[0]._connectionString)
           }).catch((err) => {
-                 console.log("Database connected fail :" + err)
+                 console.log("Database connected fail:" + err)
           });
         } catch (error) {
-          console.log(error);
+               throw console.log(error);
         }
 };
 
