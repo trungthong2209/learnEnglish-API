@@ -5,7 +5,6 @@ import IsoDateHelper from "../Helper/IsoDateHelper.js"
 export default class PrivateMessageController{
     static insertPrivateMessage(authorId, sendToId, message){
         let promise = new Promise((resolve, reject) => {
-           // let newPrivateMessage 
            let timeSend = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
            let data = { authorId, sendToId, message, timeSend }
             let newPrivateMessage = new PrivateMessage(data);

@@ -8,7 +8,7 @@ export default class FrameController {
             Frame.find({}).then((allFrame) => {
                     if (allFrame != undefined) {
                         let httpStatus = new HttpStatus(HttpStatus.OK, allFrame);
-                            resolve(httpStatus);
+                        resolve(httpStatus);
                       }
                      else {
                         let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);

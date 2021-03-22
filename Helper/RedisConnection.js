@@ -1,7 +1,6 @@
 import redis from 'redis';
 let connectRedis = redis.createClient({});
 export default class RedisConnection {
-
   static Initialise() {
     connectRedis.on('connect', () => {
       console.log("Initialising new Redis memory: " + connectRedis.address)

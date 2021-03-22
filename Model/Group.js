@@ -4,12 +4,13 @@ let Group = new mongoose.Schema({
     userJoin: [{ type: mongoose.Schema.ObjectId}],
     managerId: { type: mongoose.Schema.ObjectId },
     topicId: { type: mongoose.Schema.ObjectId },
-    groupCode: { type: Number},
+    groupCode: { type: String},
     timeTeaching: { type: Date },
     videoLink: [{ type: String }],
     action: { type: Boolean, default: true },
     timeCreate: { type: Number, default: Date.now },
     timeUpdate: { type: Date },
+    userCreate: {type: mongoose.Schema.ObjectId}
 });
 Group.index({ 'managerId': 1, 'groupCode': 1, 'timeCreate': 1 })
 

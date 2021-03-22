@@ -20,8 +20,10 @@ dotenv.config()
 var app = express();
 
 //import router
-import Login from "./routes/Login.js"
+import User from "./routes/User.js"
 import Frame from "./routes/Frame.js"
+import Group from "./routes/Group.js"
+
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -38,15 +40,18 @@ app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
 });
+
 //Connect database
 MongoHelper.Initialise();
 
 //route
-app.use('/', Login);
+app.use('/', User);
 app.use('/frame', Frame);
+app.use('/group', Group);
 app.get('/websocket', async (req, res) => {
    res.render('room')   
 })
+
 let server = createServer(app);
 
 RedisConnection.Initialise();
@@ -62,7 +67,7 @@ app.use(function (err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
-
+    
     // render the error page
     res.status(err.status || 500);
 });

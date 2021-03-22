@@ -11,10 +11,10 @@ export default class RouteHelper {
         res.write(JSON.stringify(err));
         res.end();
     }
-    static noAccessToRoute(res) {
+    static noAccessToRoute(res, err) {
         let httpStatus = new HttpStatus(HttpStatus.UNAUTHORISED, null);
         res.writeHead(httpStatus.code, httpStatus.message, { 'Content-Type': 'application/json' });
-        res.write(JSON.stringify(httpStatus.entity, null, 2));
+        res.write(JSON.stringify(err));
         res.end();
     }
 }
