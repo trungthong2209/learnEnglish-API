@@ -1,7 +1,7 @@
 import User from "../Model/User.js";
 import bcrypt from "bcrypt";
 import HttpStatus from "../Helper/HttpStatus.js";
-export default class Register {
+export default class UserController {
     static register(data) {
         let promise = new Promise((resolve, reject) => {
             User.findOne({ email: data.email }).then((doc) => {
@@ -15,17 +15,11 @@ export default class Register {
                                         resolve(httpStatusStaff);
                                     })
                                     .catch((err) => {
-                                        console.log(err)
-                                        let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
-                                        rejectStatus.message = 'SAVE REGISTER FAIL';
-                                        reject(rejectStatus);
+                                        reject(HttpStatus.getHttpStatus(err));
                                     });
                             })
                             .catch((err) => {
-                                console.log(err)
-                                let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
-                                rejectStatus.message = 'ENCODE REGISTER FAIL';
-                                reject(rejectStatus);
+                                reject(HttpStatus.getHttpStatus(err));
                             });
                     } else {
                         let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
@@ -35,7 +29,28 @@ export default class Register {
                 })
                 .catch((err) => {
                     let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
-                    rejectStatus.message = err;
+                    rejectStatus.message = err.message;
+                    reject(rejectStatus);
+                });
+        });
+        return promise;
+    }
+    static getAllUser() {
+        let promise = new Promise((resolve, reject) => {
+            Frame.find({}).then((allFrame) => {
+                    if (allFrame != undefined) {
+                        let httpStatus = new HttpStatus(HttpStatus.OK, allFrame);
+                        resolve(httpStatus);
+                      }
+                     else {
+                        let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                        rejectStatus.message = 'NOT_FOUND';
+                        reject(rejectStatus);
+                    }
+                })
+                .catch((err) => {
+                    let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
+                    rejectStatus.message = err.message;
                     reject(rejectStatus);
                 });
         });

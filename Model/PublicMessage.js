@@ -5,8 +5,8 @@ let PublicMessage = new mongoose.Schema({
     groupId: { type: mongoose.Schema.ObjectId },
     message: { type: String },
     timeCreate: { type: Number, default: Date.now },
-    timeUpdate: { type: Date },
+    timeSend: { type: Date },
 });
-User.index({ 'groupId': 1, 'authorId': 1, 'timeCreate': 1 })
+PublicMessage.index({ 'groupId': 1, 'timeSend': 1, 'timeCreate': 1 })
 
 export default mongoose.model('PublicMessages', PublicMessage)

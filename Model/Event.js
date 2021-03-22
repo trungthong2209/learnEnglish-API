@@ -7,6 +7,6 @@ let Event = new mongoose.Schema({
     timeCreate: { type: Number, default: Date.now },
     timeUpdate: { type: Date },
 });
-User.index({ 'userCreate': 1, 'timeCreate': 1 })
+Event.index({ 'userCreate': 1, 'timeCreate': 1 })
 
 export default mongoose.model('Event', Event)

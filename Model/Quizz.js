@@ -12,6 +12,6 @@ let Quizz = new mongoose.Schema({
     timeUpdate: { type: Date },
     groupId: { type: mongoose.Schema.ObjectId},
 });
-User.index({ 'groupId': 1, 'timeCreate': 1 })
+Quizz.index({ 'groupId': 1, 'timeCreate': 1 })
 
 export default mongoose.model('Quizz', Quizz)
