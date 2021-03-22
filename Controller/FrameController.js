@@ -1,13 +1,14 @@
 import Frame from "../Model/Frame.js";
 import HttpStatus from "../Helper/HttpStatus.js";
-
+import IsoDateHelper from "../Helper/IsoDateHelper.js"
+import RedisConnection from '../Helper/RedisConnection.js'
 export default class FrameController {
     static getAllFrame() {
         let promise = new Promise((resolve, reject) => {
             Frame.find({}).then((allFrame) => {
                     if (allFrame != undefined) {
-                        let httpStatusStaff = new HttpStatus(HttpStatus.OK, allFrame);
-                            resolve(httpStatusStaff);
+                        let httpStatus = new HttpStatus(HttpStatus.OK, allFrame);
+                            resolve(httpStatus);
                       }
                      else {
                         let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
@@ -17,7 +18,7 @@ export default class FrameController {
                 })
                 .catch((err) => {
                     let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
-                    rejectStatus.message = err;
+                    rejectStatus.message = err.message;
                     reject(rejectStatus);
                 });
         });
@@ -42,6 +43,7 @@ export default class FrameController {
     }
     static updateFrame(data) {
         let promise = new Promise((resolve, reject) => {
+           data.timeUpdate = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh')
             Frame.updateOne({_id: data._id}, data).then((frame) => {
                     if (frame.nModified==1) {
                         let httpStatusStaff = new HttpStatus(HttpStatus.OK, frame);
@@ -55,7 +57,7 @@ export default class FrameController {
                 })
                 .catch((err) => {
                     let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
-                    rejectStatus.message = err;
+                    rejectStatus.message = err.message;
                     reject(rejectStatus);
                 });
         });
@@ -76,7 +78,7 @@ export default class FrameController {
                 })
                 .catch((err) => {
                     let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
-                    rejectStatus.message = err;
+                    rejectStatus.message = err.message;
                     reject(rejectStatus);
                 });
         });
@@ -98,7 +100,7 @@ export default class FrameController {
                 })
                 .catch((err) => {
                     let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
-                    rejectStatus.message = err;
+                    rejectStatus.message = err.message;
                     reject(rejectStatus);
                 });
         });

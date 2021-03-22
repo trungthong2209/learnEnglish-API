@@ -35,7 +35,7 @@ export default class Register {
                 })
                 .catch((err) => {
                     let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
-                    rejectStatus.message = err;
+                    rejectStatus.message = err.message;
                     reject(rejectStatus);
                 });
         });
