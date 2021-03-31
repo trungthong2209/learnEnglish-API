@@ -76,10 +76,6 @@ export default class HttpStatus {
 
     static getHttpStatus(err) {
         let httpStatus;
-        if (err instanceof ErrorHandler) {
-            httpStatus = new HttpStatus(err.status, null);
-            httpStatus.message = err.message;
-        }
         if (err.status) {
             //if err.status is string then convert string to number for status code
             if (isNaN(err.status)) {

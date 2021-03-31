@@ -14,7 +14,7 @@ router.get("/get-all-frame", async (req, res) => {
                 });
         })
         .catch((err) => {
-            RouteHelper.noAccessToRoute(res);
+            RouteHelper.noAccessToRoute(res, err);
         });
 });
 router.post("/insert-frame", async (req, res) => {
@@ -30,7 +30,7 @@ router.post("/insert-frame", async (req, res) => {
                 });
         })
         .catch((err) => {
-            RouteHelper.noAccessToRoute(res);
+            RouteHelper.noAccessToRoute(res, err);
         });
 });
 router.put("/update-frame", async (req, res) => {
@@ -45,7 +45,7 @@ router.put("/update-frame", async (req, res) => {
                 });
         })
         .catch((err) => {
-            RouteHelper.noAccessToRoute(res);
+            RouteHelper.noAccessToRoute(res, err);
         });
 });
 router.delete("/delete-frame-id", async (req, res) => {
@@ -60,7 +60,7 @@ router.delete("/delete-frame-id", async (req, res) => {
                 });
         })
         .catch((err) => {
-            RouteHelper.noAccessToRoute(res);
+            RouteHelper.noAccessToRoute(res, err);
         });
 });
 router.get("/get-frame-id", async (req, res) => {
@@ -75,7 +75,7 @@ router.get("/get-frame-id", async (req, res) => {
                 });
         })
         .catch((err) => {
-            RouteHelper.noAccessToRoute(res);
+            RouteHelper.noAccessToRoute(res, err);
         });
 });
 export default router;

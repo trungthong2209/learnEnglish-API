@@ -1,4 +1,5 @@
 import User from "../Model/User.js";
+import Group from '../Model/Group.js'
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import HttpStatus from "../Helper/HttpStatus.js"
@@ -20,10 +21,17 @@ export default class LoginController {
                                     process.env.AUTH0_APP_SECRET,
                                     (err, token) => {
                                         if (!err) {
-                                            user.token = token
-                                            RedisConnection.setData(user._id, process.env.INFO_USER, user);
-                                            let httpStatus = new HttpStatus(HttpStatus.OK, user);
-                                            resolve(httpStatus);
+                                            user.token = token;
+                                            this.getGroup(user._id).then((httpStatusGroup)=>{
+                                                 user.group = httpStatusGroup.entity
+                                                RedisConnection.setData(user._id, process.env.INFO_USER, user);
+                                                let httpStatus = new HttpStatus(HttpStatus.OK, user);
+                                                resolve(httpStatus);
+                                            })
+                                            .catch((err) => {
+                                                reject(HttpStatus.getHttpStatus(err));
+                                            });
+                                           
                                         } else {
                                             let rejectStatus = new HttpStatus(HttpStatus.UNAUTHORISED, null);
                                             rejectStatus.message = 'LOGIN AGAIN!';
@@ -69,5 +77,21 @@ export default class LoginController {
                 })
         })
         return promise
+    }
+    static getGroup(userId){
+        let promise = new Promise((resolve, reject) => {
+            Group.find({userJoin: userId}).then((document) => {
+                let doc = []
+                document.map((value)=>{
+                    doc.push(value._id)
+                })
+                let httpStatus = new HttpStatus(HttpStatus.OK, doc);
+                resolve(httpStatus);
+            })
+            .catch((err) => {
+                reject(HttpStatus.getHttpStatus(err));
+            });
+        });
+        return promise;
     }
 }
