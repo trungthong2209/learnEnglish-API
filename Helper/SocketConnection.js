@@ -21,8 +21,10 @@ export default class SocketConnection {
     socketServer.on("connection", async (ws) => {
       let userId = await SocketConnection.checkAccessSocket(ws)
         if (userId != null) {
-         await RedisConnection.setData(userId, process.env.KEY_SOCKET, ws.id);
-        }
+        RedisConnection.setData(userId, process.env.KEY_SOCKET, ws.id).then(()=>{
+            ws.emit('status', 'online')
+        })
+       }
         console.log("user has connected: " + ws.id);
         this.sendMessagePrivate(ws);
         this.joinGroup(ws);
@@ -31,7 +33,6 @@ export default class SocketConnection {
         this.disconnectSocket(ws, userId);
         this.freeTimeMode(ws)
         this.matchVolunteer(ws)
-      
     });
   }
   //check hear beat socket
@@ -42,7 +43,6 @@ export default class SocketConnection {
     };
     return hearBeat;
   }
-
   static sendMessagePrivate(ws) {
     ws.on(process.env.SEND_MESSAGE_PRIVATE, (data) => {
       SocketConnection.checkAccessSocket(ws).then((authorId) => {
@@ -106,7 +106,7 @@ export default class SocketConnection {
                       console.log(reason);
                     });
                 } else {
-                  
+
                   ws.emit(process.env.SEND_MESSAGE_ERROR, "YOU NOT JOIN GROUP");
                 }
               }).catch((reason) => {
@@ -269,7 +269,7 @@ export default class SocketConnection {
                 ws.emit("turnOnMode", topics)
               }
               else {
-                let reason = "AccessDeniedException: 403 Insufficient Permission";
+                let reason = "403 Insufficient Permission";
                 ws.emit(process.env.SEND_MESSAGE_ERROR, JSON.stringify(reason));
               }
             }
@@ -304,21 +304,25 @@ export default class SocketConnection {
   static disconnectSocket(ws, userId) {
     ws.on("disconnect", (reason) => {
       console.log(ws.id + "..disconnected: .." + reason);
-      RedisConnection.deleteKey(userId, process.env.KEY_SOCKET);
+      RedisConnection.deleteKey(userId, process.env.KEY_SOCKET).then(()=>{
+           ws.emit('status', 'offline')
+      })
     });
   }
-
   //check authencation request socket
   static checkAccessSocket(ws) {
     let promise = new Promise((resolve, reject) => {
       let token = ws.handshake.auth.token;
       let userId = Authentication.checkToken(token);
       if (userId != null) {
-        if (RedisConnection.checkKeyExist(userId, ws.id) == 0) {
-          RedisConnection.setData(userId, ws.id);
+      RedisConnection.checkKeyExist(userId, process.env.KEY_SOCKET).then((value)=>{
+        if(value==0){
+          RedisConnection.setData(userId, process.env.KEY_SOCKET, ws.id);
+          resolve(userId)
         }
-        resolve(reply)
-      } else {
+        })
+      } 
+      else {
         reject(null)
       }
     })
