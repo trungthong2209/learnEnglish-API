@@ -12,6 +12,6 @@ let Group = new mongoose.Schema({
     timeUpdate: { type: Date },
     userCreate: {type: mongoose.Schema.ObjectId}
 });
-Group.index({ 'managerId': 1, 'groupCode': 1, 'timeCreate': 1 })
+Group.index({'managerId': 1, 'groupCode': 1, 'timeCreate': 1})
 
 export default mongoose.model('Group', Group)

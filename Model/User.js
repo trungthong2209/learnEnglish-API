@@ -11,11 +11,12 @@ let User = new mongoose.Schema({
     numberPhone: { type: String },
     token: { type: String },
     avatar: { type: String },
-    ratings: { type: mongoose.Schema.ObjectId, },
+    ratings: { type: mongoose.Schema.ObjectId},
     timeCreate: { type: Number, default: Date.now },
     timeUpdate: { type: Date },
     address: { type: String },
-    group: [{ type: mongoose.Schema.ObjectId, }],
+    group: [{ type: mongoose.Schema.ObjectId}],
+    topics: [{ type: mongoose.Schema.ObjectId}],
     Certificate: { type: String },
 });
 User.index({ '_id': 1, 'Group': 1, 'timeCreate': 1 })

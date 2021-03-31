@@ -12,7 +12,7 @@ export default class Authentication {
                         reject(rejectStatus);
                     }
                     else {
-                        if (decoded._id && decoded.userName && decoded.role) {
+                        if (decoded._id) {
                             let rejectStatus = new HttpStatus(HttpStatus.OK, decoded);
                             rejectStatus.message = "AUTHORIZATED";
                             resolve(rejectStatus);
