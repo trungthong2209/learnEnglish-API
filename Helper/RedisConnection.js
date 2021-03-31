@@ -9,6 +9,7 @@ export default class RedisConnection {
       console.error(error);
     });
   }
+  //set hash on redis 
   static setData(hash, key, value) {
     let promise = new Promise((resolve, reject) => {
       connectRedis.HSET(JSON.stringify(hash), JSON.stringify(key), JSON.stringify(value), (err, reply) => {
@@ -21,6 +22,7 @@ export default class RedisConnection {
     })
     return promise
   }
+  //set SADD on redis 
   static setList(key, value) {
     let promise = new Promise((resolve, reject) => {
       connectRedis.SADD(JSON.stringify(key), JSON.stringify(value), (err, reply) => {
@@ -45,7 +47,7 @@ export default class RedisConnection {
     })
     return promise
   }
-  static getList(key, ) {
+  static getList(key,) {
     let promise = new Promise((resolve, reject) => {
       connectRedis.SMEMBERS(JSON.stringify(key), (err, data) => {
         if (err) {
@@ -65,7 +67,7 @@ export default class RedisConnection {
           reject(err.message)
         }
         let parseData = JSON.parse(data)
-        resolve( parseData)
+        resolve(parseData)
       })
     })
     return promise
@@ -128,5 +130,36 @@ export default class RedisConnection {
     })
     return promise
   }
-
+  static subscribeChannel(channel) {
+    let promise = new Promise((resolve, reject) => {
+      connectRedis.subscribe(JSON.stringify(channel), (err, reply) => {
+        if (err) {
+          reject(err.message)
+        }
+        resolve(reply)
+      })
+    })
+    return promise
+  }
+  static publishChannel(channel, value) {
+    let promise = new Promise((resolve, reject) => {
+      connectRedis.publish(JSON.stringify(channel), JSON.stringify(value), (err, reply) => {
+        if (err) {
+          reject(err.message)
+        }
+        resolve(reply)
+      })
+    })
+    return promise
+  }
+  static sendNotify(socketServer) {
+    connectRedis.on('message', (channel, message) => {
+      if(channel!= 'all'){
+        socketServer.in(channel).emit(message)
+      }
+      else {
+        socketServer.emit(message)
+      }
+    })
+  }
 }

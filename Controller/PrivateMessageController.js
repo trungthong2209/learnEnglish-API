@@ -8,16 +8,14 @@ export default class PrivateMessageController{
            let timeSend = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
            let data = { authorId, sendToId, message, timeSend }
             let newPrivateMessage = new PrivateMessage(data);
+            newPrivateMessage.uniqueId = authorId + sendToId
             newPrivateMessage.save()
             .then((document) => {
                 let httpStatus = new HttpStatus(HttpStatus.OK, document);
                 resolve(httpStatus);
             })
             .catch((err) => {
-                console.log(err)
-                let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
-                rejectStatus.message = 'SAVE PRIVATE MESSAGE FAIL';
-                reject(rejectStatus);
+                reject(HttpStatus.getHttpStatus(err));
             });
         });
         return promise;
