@@ -3,6 +3,9 @@ import Login from '../Controller/LoginController.js'
 import RouteHelper from "../Helper/RouteHelper.js"
 import UserController from '../Controller/UserController.js'
 const router = express.Router();
+router.get('/', async (req, res) => {
+    res.send('Welcome to Learn English Project')
+})
 router.post('/register', async (req, res) => {
     let data = req.body;
     UserController.register(data).then((httpStatus) => {
