@@ -115,6 +115,7 @@ function onListening() {
     var bind = typeof addr === 'string'
         ? 'pipe ' + addr
         : 'port ' + addr.port;
+    console.log('Express listening on port '+ addr.port)
     debug('Listening on ' + bind);
 }
 
