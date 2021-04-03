@@ -9,7 +9,7 @@ export default class MongoHelper{
                             useCreateIndex: true,
                             useFindAndModify: false
                      }).then((serverDB) => {
-                            console.log("Server has been connected to " + serverDB.connections[0]._connectionString)
+                          console.log("Initialising Database " + serverDB.connections[0].host + ":"+serverDB.connections[0].port+ "/" + serverDB.connections[0].name)
                      }).catch((err) => {
                             console.log("Database connected fail:" + err)
                      });
