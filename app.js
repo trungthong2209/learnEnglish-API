@@ -71,7 +71,7 @@ app.use(function (err, req, res, next) {
     // render the error page
     res.status(err.status || 500);
 });
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.PORT || '3001');
 
 server.listen(port);
 server.on('error', onError);
