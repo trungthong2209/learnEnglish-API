@@ -62,7 +62,7 @@ export default class UserController {
             pipeList.push(
                 {
                     $match: {
-                        "userId": mongoose.Types.ObjectId(userId)
+                        "userId": ObjectId(userId)
                     }
                 },
               
