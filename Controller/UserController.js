@@ -60,6 +60,11 @@ export default class UserController {
         let promise = new Promise((resolve, reject) => {
             let pipeList = [];
             pipeList.push(
+                {
+                    $match: {
+                        "userId": mongoose.Types.ObjectId(userId)
+                    }
+                },
               
                 {
 
@@ -88,11 +93,6 @@ export default class UserController {
                         token:"$userData.token"
                 }
                     
-                },
-                {
-                    $match: {
-                        "userId": mongoose.Types.ObjectId(userId)
-                    }
                 },
                 {
                     $lookup: {
