@@ -3,7 +3,7 @@ import RouteHelper from "../Helper/RouteHelper.js";
 import Frame from "../Controller/FrameController.js";
 import Authentication from "../Helper/Authencation.js";
 const router = express.Router();
-router.get("/get-all-frame", async (req, res) => {
+router.get("/", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
             Frame.getAllFrame()
                 .then((httpStatus) => {

@@ -6,7 +6,7 @@ let PrivateMessage = new mongoose.Schema({
     message: { type: String },
     timeCreate: { type: Number, default: Date.now },
     timeSend: { type: Date },
-    uniqueId: {type: Number}, 
+    uniqueId: {type: String}, 
 });
 PrivateMessage.index({'authorId': 1, 'timeSend': 1, 'timeCreate': 1})
 

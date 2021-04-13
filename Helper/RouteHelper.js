@@ -6,10 +6,22 @@ export default class RouteHelper {
         res.end();
     }
     static processErrorResponse(res, err) {
-        res.writeHead(err.code, err.message, { "Content-Type": "text/html" });
-        res.write("Failed to get, create or update " + ". Check parameters are correct.");
-        res.write(JSON.stringify(err));
-        res.end();
+        if(err.code == undefined && err.message != undefined){
+            res.writeHead(500, err.message, { "Content-Type": "text/html" });
+            res.write(JSON.stringify(err.message));
+            res.end();
+        }
+        else if (err.code == undefined && err.message == undefined){
+            res.writeHead(500, "Server Error", { "Content-Type": "text/html" });
+            res.write("Failed to get, create or update " + ". Check parameters are correct.");
+            res.end();
+        }
+        else {
+            res.writeHead(err.code, err.message, { "Content-Type": "text/html" });
+            res.write("Failed to get, create or update " + ". Check parameters are correct.");
+            res.write(JSON.stringify(err));
+            res.end();
+        }
     }
     static noAccessToRoute(res, err) {
         let httpStatus = new HttpStatus(HttpStatus.UNAUTHORISED, null);

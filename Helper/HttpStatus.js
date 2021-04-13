@@ -133,4 +133,5 @@ export default class HttpStatus {
     static CONFLICT = 409;
     static BAD_REQUEST = 400;
     static NON_AUTHENTICATION_INFO = 203;
+    static FORBIDDEN = 403;
 }
