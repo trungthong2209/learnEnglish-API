@@ -6,12 +6,11 @@ import logger from 'morgan';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { createServer } from 'http';
-import SocketConnection from './Helper/SocketConnection.js'
+import SocketConnection from './Controller/SocketConnection.js'
 import RedisConnection from './Helper/RedisConnection.js'
 import Debug from 'debug';
 const debug = Debug('Learning-English-API:server')
 import MongoHelper from './Helper/MongoHelper.js';
-
 
 //import bodyParser from 'body-parser'
 const __dirname = path.resolve();
@@ -23,15 +22,16 @@ var app = express();
 import User from "./routes/User.js"
 import Frame from "./routes/Frame.js"
 import Group from "./routes/Group.js"
-
-
+import PrivateMessage from "./routes/PrivateMessage.js"
+import PublicMessage from "./routes/PublicMessage.js"
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(cors())
 app.use(logger('dev'));
 app.use(express.json({ extended: true, limit: "16mb" }));
-app.use(express.urlencoded({ extended: true, limit: "16mb" }))
+app.use(express.urlencoded({extended: true, limit: "16mb"}))
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "upload")));
 app.use((express.static(path.join(__dirname, 'public'))));
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -45,12 +45,21 @@ app.use(function (req, res, next) {
 MongoHelper.Initialise();
 
 //route
+app.get('/', async (req, res) => {
+    res.send('Welcome to Learn English Project')
+})
 app.use('/', User);
-app.use('/frame', Frame);
-app.use('/group', Group);
-app.get('/websocket', async (req, res) => {
+app.use('/privateMessage', PrivateMessage);
+app.use('/frames', Frame);
+app.use('/groups', Group);
+app.use('/publicMessage', PublicMessage);
+app.get('/websocket',  (req, res) => {
    res.render('room')   
 })
+let roomId = '12345'
+app.get('/call',  (req, res) => {
+    res.render('video', {roomId : roomId})   
+ })
 
 let server = createServer(app);
 

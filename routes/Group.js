@@ -3,7 +3,7 @@ import RouteHelper from "../Helper/RouteHelper.js";
 import Group from "../Controller/GroupController.js";
 import Authentication from "../Helper/Authencation.js";
 const router = express.Router();
-router.get("/get-all-group", async (req, res) => {
+router.get("/", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
             Group.getAllGroup()
                 .then((httpStatus) => {
@@ -21,10 +21,12 @@ router.post("/insert-group", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
             let data = req.body;
             data.userCreate = user.entity._id;
+            data.managerId = user.entity._id;
             Group.insertGroup(data).then((httpStatus) => {
                     RouteHelper.processResponse(res, httpStatus);
                 })
                 .catch((err) => {
+                    console.log(err)
                     RouteHelper.processErrorResponse(res, err);
                 });
         })

@@ -1,19 +1,34 @@
 import Group from "../Model/Group.js";
 import HttpStatus from "../Helper/HttpStatus.js";
-
+import UploadFIleHelper from '../Helper/UploadFIleHelper.js'
+import RedisConnection from "../Helper/RedisConnection.js";
 export default class GroupController {
     static insertGroup(data) {
         let promise = new Promise((resolve, reject) => {
-            let groupCode = this.randomCode();
-            let newGroup = new Group(data);
-            newGroup.groupCode = groupCode;
-            newGroup.save().then((document) => {
-                let httpStatus = new HttpStatus(HttpStatus.OK, document);
-                resolve(httpStatus);
+            RedisConnection.getData(data.userCreate, process.env.INFO_USER).then((user) => {
+                if (user.role == 'student') {
+                    let reason = 'You don’t have permission to create group'
+                    let httpStatus = new HttpStatus(HttpStatus.FORBIDDEN, reason);
+                    resolve(httpStatus);
+                }
+                else {
+                    let groupCode = this.randomCode();
+                    let newGroup = new Group(data);
+                    UploadFIleHelper.convertImageToSave(data).then((result) => {
+                        console.log(result)
+                    })
+                        .catch((err) => { console.log(err) })
+                    newGroup.groupCode = groupCode;
+                    newGroup.save().then((document) => {
+                        let httpStatus = new HttpStatus(HttpStatus.OK, document);
+                        resolve(httpStatus);
+                    })
+                        .catch((err) => {
+                            reject(HttpStatus.getHttpStatus(err));
+                        });
+                }
             })
-                .catch((err) => {
-                    reject(HttpStatus.getHttpStatus(err));
-                });
+
         });
         return promise;
     }
@@ -31,9 +46,9 @@ export default class GroupController {
                 },
                 {
                     $unwind: {
-                    path: '$manager',
-                    preserveNullAndEmptyArrays: true
-                }
+                        path: '$manager',
+                        preserveNullAndEmptyArrays: true
+                    }
                 },
                 {
                     $lookup: {
@@ -45,9 +60,9 @@ export default class GroupController {
                 },
                 {
                     $unwind: {
-                    path: '$frames',
-                    preserveNullAndEmptyArrays: true
-                }
+                        path: '$frames',
+                        preserveNullAndEmptyArrays: true
+                    }
                 },
                 {
                     $project: {
@@ -56,15 +71,17 @@ export default class GroupController {
                         userJoin: { $ifNull: ["$userJoin", ""] },
                         topicId: '$frames.topic',
                         timeCreate: 1,
-                        videoLink:  { $ifNull: ["$videoLink", ""] },
-                        timeTeaching:  { $ifNull: ["$timeTeaching", ""] },
-                        manager: { $ifNull: [{
-                            managerName: '$manager.userName',
-                            managerId: '$manager._id',
-                            managerAvatar: '$manager.avatar',
-                            managerEmail: '$manager.email'
-                        }, ""] },
-                        
+                        videoLink: { $ifNull: ["$videoLink", ""] },
+                        timeTeaching: { $ifNull: ["$timeTeaching", ""] },
+                        manager: {
+                            $ifNull: [{
+                                managerName: '$manager.userName',
+                                managerId: '$manager._id',
+                                managerAvatar: '$manager.avatar',
+                                managerEmail: '$manager.email'
+                            }, ""]
+                        },
+
                     }
                 },
                 {
@@ -78,17 +95,17 @@ export default class GroupController {
                 {
                     $unwind: {
                         path: '$userJoinGroup',
-                    preserveNullAndEmptyArrays: true
-                }
+                        preserveNullAndEmptyArrays: true
+                    }
                 },
                 {
                     $group: {
                         _id: "$_id",
                         groupCode: { $first: "$groupCode" },
                         manager: { $first: "$manager" },
-                        topic: { $first: "$topicId"},
-                        videoLink : { $first: "$videoLink"},
-                        timeTeaching:  { $first: "$timeTeaching"},
+                        topic: { $first: "$topicId" },
+                        videoLink: { $first: "$videoLink" },
+                        timeTeaching: { $first: "$timeTeaching" },
                         userJoinGroup: {
                             $push: {
                                 userName: "$userJoinGroup.userName",
