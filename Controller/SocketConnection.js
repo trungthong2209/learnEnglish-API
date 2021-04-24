@@ -93,6 +93,7 @@ export default class SocketConnection {
                     for(let socketId of socketIds){
                       console.log("socket id: " + socketId)
                       ws.to(socketId).emit(process.env.SEND_MESSAGE_PRIVATE, data)
+                      console.log('sent ' + socketId)
                     }
                   }).catch((reason) => {
                     ws.emit(process.env.SEND_MESSAGE_ERROR, JSON.stringify(reason));
