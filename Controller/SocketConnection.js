@@ -31,7 +31,6 @@ export default class SocketConnection {
           }
         })
           RedisConnection.getData(userId, process.env.KEY_SOCKET).then((socketIds)=>{
-            console.log(userId +" : "+ socketIds)    
                   if(socketIds == null){
                     let arrSocketIds = [];
                     arrSocketIds.push(ws.id)  
@@ -42,7 +41,26 @@ export default class SocketConnection {
                     RedisConnection.setData(userId, process.env.KEY_SOCKET, socketIds)
                   }
           })
-      }
+  }
+      // socketServer.use((ws, next)=>{
+      //   SocketConnection.checkAccessSocket(ws).then((userId)=>{
+      //     RedisConnection.getData(userId, process.env.KEY_SOCKET).then((socketIds)=>{
+      //       if(socketIds == null){
+      //         let arrSocketIds = [];
+      //         arrSocketIds.push(ws.id)  
+      //         RedisConnection.setData(userId, process.env.KEY_SOCKET, arrSocketIds)
+      //       }
+      //       else {
+      //         socketIds.push(ws.id)
+      //         RedisConnection.setData(userId, process.env.KEY_SOCKET, socketIds)
+      //       }
+      //       next();
+      //   })
+      //   .catch((error)=>{
+      //     next();
+      //   })
+      //     })
+      // })
       console.log("user has connected: " + ws.id);
       this.sendMessagePrivate(ws);
       this.joinGroup(ws, socketServer);
@@ -66,8 +84,8 @@ export default class SocketConnection {
     ws.on(process.env.SEND_MESSAGE_PRIVATE, (data) => {
       SocketConnection.checkAccessSocket(ws).then((userId) => {
         if (userId != null) {
-          RedisConnection.getData(data.sendToId, process.env.KEY_SOCKET).then((sockets)=>{
-            console.log(sockets)
+          RedisConnection.getData(userId, process.env.INFO_USER).then((infoUser) => {
+            console.log(infoUser)
           })
           PrivateMessageController.insertPrivateMessage(userId, data.sendToId, data.message).then((HttpStatus) => {
             RedisConnection.getData(data.sendToId, process.env.KEY_SOCKET).then((socketIds) => {
