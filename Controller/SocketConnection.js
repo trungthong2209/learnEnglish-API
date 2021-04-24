@@ -34,7 +34,7 @@ export default class SocketConnection {
             console.log(userId +" : "+ socketIds)    
                   if(socketIds == null){
                     let arrSocketIds = [];
-                    arrSocketIds.push(ws.id)
+                    arrSocketIds.push(ws.id)  
                     RedisConnection.setData(userId, process.env.KEY_SOCKET, arrSocketIds)
                   }
                   else {
@@ -62,15 +62,13 @@ export default class SocketConnection {
     };
     return hearBeat;
   }
-  static login(ws){ 
-    ws.on('loginSuccess', (data)=>{
-         
-    })
-  }
   static sendMessagePrivate(ws) {
     ws.on(process.env.SEND_MESSAGE_PRIVATE, (data) => {
       SocketConnection.checkAccessSocket(ws).then((userId) => {
         if (userId != null) {
+          RedisConnection.getData(data.sendToId, process.env.KEY_SOCKET).then((sockets)=>{
+            console.log(sockets)
+          })
           PrivateMessageController.insertPrivateMessage(userId, data.sendToId, data.message).then((HttpStatus) => {
             RedisConnection.getData(data.sendToId, process.env.KEY_SOCKET).then((socketIds) => {
               if(socketIds != null){
@@ -79,7 +77,7 @@ export default class SocketConnection {
                     console.log(infoUser)
                     let data = this.formatMessage(HttpStatus, infoUser);
                     for(let socketId of socketIds){
-                      console.log("socket id: "+socketId)
+                      console.log("socket id: " + socketId)
                       ws.to(socketId).emit(process.env.SEND_MESSAGE_PRIVATE, data)
                     }
                   }).catch((reason) => {
