@@ -397,14 +397,16 @@ export default class SocketConnection {
           else {
             RedisConnection.deleteKey(userId, process.env.KEY_SOCKET)
             RedisConnection.expireHash(userId, 60)
-            if(data.group !== null && data.group !== undefined){
-              data.group.map((gr) => {
-                RedisConnection.deleteOneOfList(gr, userId)
-                RedisConnection.getList(gr).then((listUsers) => {
-                  ws.to(gr).emit('listUserOnline', listUsers)
+            if(data !=null){
+              if(data.group !== null && data.group !== undefined){
+                data.group.map((gr) => {
+                  RedisConnection.deleteOneOfList(gr, userId)
+                  RedisConnection.getList(gr).then((listUsers) => {
+                    ws.to(gr).emit('listUserOnline', listUsers)
+                  })
                 })
-              })
-             }
+               }
+            }
           }
         })
       })
