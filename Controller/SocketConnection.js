@@ -30,9 +30,8 @@ export default class SocketConnection {
             })
           }
         })
-          RedisConnection.getData(userId,process.env.KEY_SOCKET).then((socketIds)=>{
-            console.log(" userId "+ userId)    
-            console.log(socketIds)
+          RedisConnection.getData(userId, process.env.KEY_SOCKET).then((socketIds)=>{
+            console.log(userId + socketIds)    
                   if(socketIds == null){
                     let arrSocketIds = [];
                     arrSocketIds.push(ws.id)
@@ -54,6 +53,7 @@ export default class SocketConnection {
       this.matchVolunteer(ws)
     });
   }
+  
   //check hear beat socket
   static hearBeat() {
     let hearBeat = {
@@ -62,19 +62,24 @@ export default class SocketConnection {
     };
     return hearBeat;
   }
+  static login(ws){ 
+    ws.on('loginSuccess', (data)=>{
+         
+    })
+  }
   static sendMessagePrivate(ws) {
     ws.on(process.env.SEND_MESSAGE_PRIVATE, (data) => {
       SocketConnection.checkAccessSocket(ws).then((userId) => {
         if (userId != null) {
           PrivateMessageController.insertPrivateMessage(userId, data.sendToId, data.message).then((HttpStatus) => {
-            console.log(HttpStatus)
             RedisConnection.getData(data.sendToId, process.env.KEY_SOCKET).then((socketIds) => {
-              if(socketIds!=null){
+              if(socketIds != null){
                 if (socketIds.length > 0) {
                   RedisConnection.getData(userId, process.env.INFO_USER).then((infoUser) => {
+                    console.log(infoUser)
                     let data = this.formatMessage(HttpStatus, infoUser);
                     for(let socketId of socketIds){
-                      console.log(socketId)
+                      console.log("socket id: "+socketId)
                       ws.to(socketId).emit(process.env.SEND_MESSAGE_PRIVATE, data)
                     }
                   }).catch((reason) => {
@@ -82,6 +87,10 @@ export default class SocketConnection {
                     console.log(reason);
                   });
                 }
+              }
+              else {
+                let reason = 'ERROR'
+                ws.emit(process.env.SEND_MESSAGE_ERROR, JSON.stringify(reason));
               }
             })
               .catch((reason) => {
@@ -105,7 +114,6 @@ export default class SocketConnection {
     ws.on(process.env.SEND_MESSAGE_PUBLIC, (dataFromClient) => {
       let groupId = dataFromClient.groupId;
       let messageString = dataFromClient.message
-      console.log(dataFromClient)
       SocketConnection.checkAccessSocket(ws).then((userId) => {
         if (userId != null) {
           RedisConnection.getData(userId, process.env.INFO_USER).then((infoUser) => {
@@ -362,7 +370,7 @@ export default class SocketConnection {
   }
   static disconnectSocket(ws, userId) {
     ws.on("disconnect", (reason) => {
-      console.log(ws.id + " disconnected by reason : " + reason);
+      console.log(ws.id + " disconnected by reason: " + reason);
       RedisConnection.getData(userId, process.env.INFO_USER).then((data) => {
         RedisConnection.getData(userId, process.env.KEY_SOCKET).then((wsIds)=>{
           if(wsIds != null && wsIds.length > 1) {
