@@ -1,12 +1,18 @@
 import PublicMessage from "../Model/PublicMessage.js";
 import HttpStatus from "../Helper/HttpStatus.js";
 import IsoDateHelper from "../Helper/IsoDateHelper.js"
+import UploadFileHelper from '../Helper/UploadFilesHelper.js'
 import mongoose from 'mongoose';
 export default class PublicMessageController{
     static insertPublicMessage(authorId, groupId, message){
-        let promise = new Promise((resolve, reject) => {
+        let promise = new Promise(async (resolve, reject) => {
             let timeSend = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
             let data = { authorId, groupId, message, timeSend}
+            data.image = message;
+            let imageURL = await UploadFileHelper.convertImageToSave(data);
+            if (imageURL != null && imageURL.Location != null) {
+                    data.message = imageURL.Location;
+            }
             let newPublicMessage = new PublicMessage(data);
             newPublicMessage.save()
             .then((document) => {

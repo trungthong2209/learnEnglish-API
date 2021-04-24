@@ -17,6 +17,21 @@ router.get("/", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
+router.get("/getGroupsById", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let groupId = req.body._id;
+            Group.getGroupById(groupId)
+                .then((httpStatus) => {
+                    RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+        })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
 router.post("/insert-group", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
             let data = req.body;
