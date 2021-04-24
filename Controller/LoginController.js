@@ -1,5 +1,5 @@
 import User from "../Model/User.js";
-import Group from '../Model/Group.js'
+import GroupController from '../Controller/GroupController.js'
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import HttpStatus from "../Helper/HttpStatus.js"
@@ -22,7 +22,7 @@ export default class LoginController {
                                     (err, token) => {
                                         if (!err) {
                                             user.token = token;
-                                            this.getGroups(user._id).then((httpStatusGroup)=>{
+                                            GroupController.getGroupsByUserId(user._id).then((httpStatusGroup)=>{
                                                  user.group = httpStatusGroup.entity
                                                 RedisConnection.setData(user._id, process.env.INFO_USER, user);
                                                 let httpStatus = new HttpStatus(HttpStatus.OK, user);
@@ -86,20 +86,20 @@ export default class LoginController {
         })
         return promise
     }
-    static getGroups(userId){
-        let promise = new Promise((resolve, reject) => {
-            Group.find({userJoin: userId}).then((document) => {
-                let doc = []
-                document.map((value)=>{
-                    doc.push(value._id)
-                })
-                let httpStatus = new HttpStatus(HttpStatus.OK, doc);
-                resolve(httpStatus);
-            })
-            .catch((err) => {
-                reject(HttpStatus.getHttpStatus(err));
-            });
-        });
-        return promise;
-    }
+    // static getGroups(userId){
+    //     let promise = new Promise((resolve, reject) => {
+    //         Group.find({userJoin: userId}).then((document) => {
+    //             let doc = []
+    //             document.map((value)=>{
+    //                 doc.push(value._id)
+    //             })
+    //             let httpStatus = new HttpStatus(HttpStatus.OK, doc);
+    //             resolve(httpStatus);
+    //         })
+    //         .catch((err) => {
+    //             reject(HttpStatus.getHttpStatus(err));
+    //         });
+    //     });
+    //     return promise;
+    // }
 }

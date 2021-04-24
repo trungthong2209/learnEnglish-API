@@ -3,7 +3,7 @@ let connectRedis = redis.createClient({});
 export default class RedisConnection {
   static Initialise() {
     connectRedis.on('connect', () => {
-      console.log("Initialising new Redis memory: " + connectRedis.address)
+        console.log("Initialising new Redis memory: " + connectRedis.address)
     })
     connectRedis.on("error", function (error) {
       console.error(error);
@@ -84,6 +84,18 @@ export default class RedisConnection {
     })
     return promise
   }
+  static getKeyOnHash(hash) {
+    let promise = new Promise((resolve, reject) => {
+      connectRedis.HKEYS(JSON.stringify(hash), (err, data) => {
+        if (err) {
+          console.log(err)
+          reject(err.message)
+        }
+        resolve(data)
+      })
+    })
+    return promise
+  }
   static deleteKey(hash, key) {
     let promise = new Promise((resolve, reject) => {
       connectRedis.HDEL(JSON.stringify(hash), JSON.stringify(key), (err, reply) => {
@@ -99,6 +111,30 @@ export default class RedisConnection {
   static deleteHash(hash) {
     let promise = new Promise((resolve, reject) => {
       connectRedis.DEL(JSON.stringify(hash), (err, reply) => {
+        if (err) {
+          console.log(err)
+          reject(err.message)
+        }
+        resolve(reply)
+      })
+    })
+    return promise
+  }
+  static expireHash(hash, seconds) {
+    let promise = new Promise((resolve, reject) => {
+      connectRedis.EXPIRE(JSON.stringify(hash), seconds, (err, reply) => {
+        if (err) {
+          console.log(err)
+          reject(err.message)
+        }
+        resolve(reply)
+      })
+    })
+    return promise
+  }
+  static checkExpireHash(hash) {
+    let promise = new Promise((resolve, reject) => {
+      connectRedis.TTL(JSON.stringify(hash), (err, reply) => {
         if (err) {
           console.log(err)
           reject(err.message)

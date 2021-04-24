@@ -45,4 +45,33 @@ router.get('/profile', async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 })
+router.put('/updateProfile', async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let data = req.body;
+        let _id = user.entity._id;
+        UserController.updateUser(_id, data).then((httpStatus) => {
+            RouteHelper.processResponse(res, httpStatus);
+        })
+            .catch((err) => {
+                RouteHelper.processErrorResponse(res, err);
+            });
+    })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+})
+router.put('/updateRole', async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let data = req.body;
+        UserController.updateRole(data).then((httpStatus) => {
+            RouteHelper.processResponse(res, httpStatus);
+        })
+            .catch((err) => {
+                RouteHelper.processErrorResponse(res, err);
+            });
+    })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+})
 export default router;

@@ -17,7 +17,7 @@ let User = new mongoose.Schema({
     address: { type: String },
     group: [{ type: mongoose.Schema.ObjectId}],
     topics: [{ type: mongoose.Schema.ObjectId}],
-    Certificate: { type: String },
+    certificates: { type: String },
 });
 User.index({ '_id': 1, 'Group': 1, 'timeCreate': 1 })
 

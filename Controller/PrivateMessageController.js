@@ -1,12 +1,17 @@
 import PrivateMessage from "../Model/PrivateMessage.js";
 import HttpStatus from "../Helper/HttpStatus.js";
 import IsoDateHelper from "../Helper/IsoDateHelper.js"
-
+import UploadFileHelper from '../Helper/UploadFilesHelper.js'
 export default class PrivateMessageController {
-    static insertPrivateMessage(authorId, sendToId, message) {
-        let promise = new Promise((resolve, reject) => {
+    static  insertPrivateMessage(authorId, sendToId, message) {
+        let promise = new Promise( async (resolve, reject) => {
             let timeSend = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
             let data = { authorId, sendToId, message, timeSend }
+            data.image = message;
+            let imageURL = await UploadFileHelper.convertImageToSave(data)
+            if (imageURL != null && imageURL.Location != null) {
+                    data.message = imageURL.Location;
+            }
             let newPrivateMessage = new PrivateMessage(data);
             newPrivateMessage.uniqueId = authorId + sendToId
             newPrivateMessage.save()
