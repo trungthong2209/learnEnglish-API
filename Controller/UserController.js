@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import HttpStatus from "../Helper/HttpStatus.js";
 import mongoose from 'mongoose';
 import RedisConnection from "../Helper/RedisConnection.js";
+import UploadFileHelper from '../Helper/UploadFilesHelper.js'
+import IsoDateHelper from "../Helper/IsoDateHelper.js"
 export default class UserController {
     static register(data) {
         let promise = new Promise((resolve, reject) => {
@@ -30,6 +32,100 @@ export default class UserController {
                 }
             })
                 .catch((err) => {
+                    let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
+                    rejectStatus.message = err.message;
+                    reject(rejectStatus);
+                });
+        });
+        return promise;
+    }
+    static updateUser(_id, data) {
+        let promise = new Promise((resolve, reject) => {
+            User.findOne({ _id: _id}).then( async (user) => {
+                if (user != undefined) {
+                    let updateUser = data;
+                    let imageURI = await UploadFileHelper.convertImageToSave(data);
+                    if(imageURI != null){
+                        updateUser.avatar = imageURI.Location;
+                    }
+                    let timeUpdate = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
+                    updateUser.timeUpdate = timeUpdate;
+                    bcrypt.hash(data.password, 10).then((hashedPassword) => {
+                        updateUser.password = hashedPassword;
+                        user.updateOne(updateUser).then((modified) => {
+                                if(modified.nModified==1){
+                                    User.findOne({_id: _id}).then((newInfo)=>{
+                                        RedisConnection.getData(_id, process.env.INFO_USER).then((oldInfo)=>{
+                                            newInfo.token = oldInfo.token;
+                                            newInfo.group = oldInfo.group;
+                                            RedisConnection.setData(_id, process.env.INFO_USER, newInfo)
+                                                let httpStatusStaff = new HttpStatus(HttpStatus.OK, newInfo);
+                                                resolve(httpStatusStaff);
+                                        })
+                                        .catch((err) => {
+                                            reject(HttpStatus.getHttpStatus(err));
+                                        });
+                                    })
+                                    .catch((err) => {
+                                        reject(HttpStatus.getHttpStatus(err));
+                                    });
+                                }
+                                else {
+                                    RedisConnection.getData(_id, process.env.INFO_USER).then((info)=>{
+                                        let httpStatusStaff = new HttpStatus(HttpStatus.OK, info);
+                                        resolve(httpStatusStaff);
+                                    })
+                                }
+                            })
+                            .catch((err) => {
+                                reject(HttpStatus.getHttpStatus(err));
+                            });
+                    })
+                        .catch((err) => {
+                            reject(HttpStatus.getHttpStatus(err));
+                        });
+                } else {
+                    let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                    rejectStatus.message = 'USER IS NOT EXIST';
+                    reject(rejectStatus);
+                }
+            })
+                .catch((err) => {
+                    let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
+                    rejectStatus.message = err.message;
+                    reject(rejectStatus);
+                });
+        });
+        return promise;
+    }
+    static updateRole(data) {
+        let promise = new Promise((resolve, reject) => {
+            User.findOne({ _id: data._id }).then((user) => {
+                if (user != undefined) {
+                    let timeUpdate = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
+                    data.timeUpdate = timeUpdate;
+                    user.updateOne(data)
+                            .then(() => {
+                                RedisConnection.getData(data._id,process.env.INFO_USER).then((info)=>{
+                                    info.role = data.role;
+                                    RedisConnection.setData(data._id,process.env.INFO_USER,info)
+                                    let httpStatusStaff = new HttpStatus(HttpStatus.OK, info);
+                                    resolve(httpStatusStaff);
+                                })
+                                .catch((err) => {
+                                    reject(HttpStatus.getHttpStatus(err));
+                                });
+                            })
+                            .catch((err) => {
+                                reject(HttpStatus.getHttpStatus(err));
+                            });
+                    
+                } else {
+                    let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                    rejectStatus.message = 'USER IS NOT EXIST';
+                    reject(rejectStatus);
+                }
+            }).catch((err) => {
                     let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
                     rejectStatus.message = err.message;
                     reject(rejectStatus);
@@ -90,23 +186,45 @@ export default class UserController {
                 },
                 {
                     $project: {
+                        userName: 1,
+                        email: 1,
+                        avatar: 1,
+                        sex: 1,
                         _id: 1,
-                        groupCode: '$groupOfUser.groupCode',
-                        userJoin: { $ifNull: ["$groupOfUser.userJoin", ""] },
-                        topic: '$topicOfGroup.topic',
-                        timeCreate: "$groupOfUser.timeCreate",
-                        timeTeaching: { $ifNull: ["$groupOfUser.timeTeaching", ""] },
-                        manager: {
-                            $ifNull: [{
-                                managerName: '$manager.userName',
-                                managerId: '$manager._id',
-                                managerAvatar: '$manager.avatar',
-                                managerEmail: '$manager.email'
-                            }, ""]
+                        group: {
+                                $ifNull: [{
+                                    groupCode: '$groupOfUser.groupCode',
+                                    userJoin: { $ifNull: ["$groupOfUser.userJoin", ""] },
+                                    topic: '$topicOfGroup.topic',
+                                    timeCreate: "$groupOfUser.timeCreate",
+                                    timeTeaching: { $ifNull: ["$groupOfUser.timeTeaching", ""] },
+                                    manager: {
+                                        $ifNull: [{
+                                            managerName: '$manager.userName',
+                                            managerId: '$manager._id',
+                                            managerAvatar: '$manager.avatar',
+                                            managerEmail: '$manager.email'
+                                        }, ""]
+                                    },
+                                }, ""]
+                            
                         },
-
                     }
                 },
+                {
+                    $group: {
+                        _id: "$_id",
+                        userName: { $first: "$userName" },
+                        email: { $first: "$email" },
+                        avatar: { $first: "$avatar" },
+                        sex: { $first: "$sex" },
+                        groups: {
+                            $push: {
+                                group: "$group",
+                            }
+                        }
+                    },
+                }
             )
             RedisConnection.getData(userId, process.env.GROUP_OF_USER).then((groupsOfUser) => {
                 if (groupsOfUser != null) {
