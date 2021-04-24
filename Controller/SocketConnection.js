@@ -31,6 +31,8 @@ export default class SocketConnection {
           }
         })
           RedisConnection.getData(userId,process.env.KEY_SOCKET).then((socketIds)=>{
+            console.log(" userId "+ userId)    
+            console.log(socketIds)
                   if(socketIds == null){
                     let arrSocketIds = [];
                     arrSocketIds.push(ws.id)
