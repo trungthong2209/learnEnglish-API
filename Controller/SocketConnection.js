@@ -84,16 +84,18 @@ export default class SocketConnection {
     ws.on(process.env.SEND_MESSAGE_PRIVATE, (data) => {
       SocketConnection.checkAccessSocket(ws).then((userId) => {
         if (userId != null) {
-          RedisConnection.getData(userId, process.env.INFO_USER).then((infoUser) => {
-            console.log(infoUser)
+          RedisConnection.getData(userId, process.env.KEY_SOCKET).then((infoUser) => {
+            console.log("socket of user"+infoUser)
           })
           PrivateMessageController.insertPrivateMessage(userId, data.sendToId, data.message).then((HttpStatus) => {
+console.log(data.sendToId)
             RedisConnection.getData(data.sendToId, process.env.KEY_SOCKET).then((socketIds) => {
               if(socketIds != null){
                 if (socketIds.length > 0) {
                   RedisConnection.getData(userId, process.env.INFO_USER).then((infoUser) => {
-                    console.log(infoUser)
+           
                     let data = this.formatMessage(HttpStatus, infoUser);
+console.log(data)
                     for(let socketId of socketIds){
                       console.log("socket id: " + socketId)
                       ws.to(socketId).emit(process.env.SEND_MESSAGE_PRIVATE, data)
