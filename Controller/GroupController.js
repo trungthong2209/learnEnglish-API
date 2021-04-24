@@ -4,6 +4,24 @@ import UploadFilesHelper from '../Helper/UploadFilesHelper.js'
 import RedisConnection from "../Helper/RedisConnection.js";
 import mongoose from 'mongoose';
 export default class GroupController {
+    static uploadFiles(req){
+        let promise = new Promise((resolve, reject) => {
+          let groupId = req.body.groupId;
+          UploadFilesHelper.uploadFiles(req).then((data)=>{
+              Group.updateOne({_id: groupId},{$push: {files: data.Location}}).then((group)=>{
+                        let httpStatus = new HttpStatus(HttpStatus.OK, group);
+                        resolve(httpStatus);
+              })
+              .catch((err) => {
+                reject(HttpStatus.getHttpStatus(err));
+            });
+          })
+          .catch((err) => {
+            reject(HttpStatus.getHttpStatus(err));
+        });
+        });
+        return promise;
+    }
     static getGroupsByUserId(userId){
         let promise = new Promise((resolve, reject) => {
             Group.find({userJoin: userId}).then((document) => {
