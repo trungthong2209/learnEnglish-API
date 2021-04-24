@@ -22,7 +22,7 @@ export default class LoginController {
                                     (err, token) => {
                                         if (!err) {
                                             user.token = token;
-                                            this.getGroup(user._id).then((httpStatusGroup)=>{
+                                            this.getGroups(user._id).then((httpStatusGroup)=>{
                                                  user.group = httpStatusGroup.entity
                                                 RedisConnection.setData(user._id, process.env.INFO_USER, user);
                                                 let httpStatus = new HttpStatus(HttpStatus.OK, user);
@@ -66,19 +66,27 @@ export default class LoginController {
     static logOut(req) {
         let promise = new Promise((resolve, reject) => {
             let token = req.headers['x-wfg-token'];
-            let userId = Authentication.checkToken(token);
-            RedisConnection.deleteHash(userId).then((value) => {
-                let httpStatus = new HttpStatus(HttpStatus.OK, value);
+            if(token){
+                let userId = Authentication.checkToken(token);
+                RedisConnection.deleteHash(userId).then((value) => {
+                    let httpStatus = new HttpStatus(HttpStatus.OK, value);
+                    httpStatus.message = "Logged Out Successfully"
+                    resolve(httpStatus);
+                })
+                    .catch((err) => {
+                        reject(HttpStatus.getHttpStatus(err));
+                })
+            }
+            else {
+                let httpStatus = new HttpStatus(HttpStatus.OK, null);
                 httpStatus.message = "Logged Out Successfully"
                 resolve(httpStatus);
-            })
-                .catch((err) => {
-                    reject(HttpStatus.getHttpStatus(err));
-                })
+            }
+    
         })
         return promise
     }
-    static getGroup(userId){
+    static getGroups(userId){
         let promise = new Promise((resolve, reject) => {
             Group.find({userJoin: userId}).then((document) => {
                 let doc = []
