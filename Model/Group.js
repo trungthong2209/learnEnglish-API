@@ -8,6 +8,7 @@ let Group = new mongoose.Schema({
     image: {type: String},
     timeTeaching: { type: String },
     videoLink: [{ type: String }],
+    files : [{type: String}],
     action: { type: Boolean, default: true },
     timeCreate: { type: Number, default: Date.now },
     timeUpdate: { type: Date },

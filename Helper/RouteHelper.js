@@ -7,7 +7,7 @@ export default class RouteHelper {
     }
     static processErrorResponse(res, err) {
         if(err.code == undefined && err.message != undefined){
-            res.writeHead(500, err.message, { "Content-Type": "text/html" });
+            res.writeHead(400, err.message, { "Content-Type": "text/html" });
             res.write(JSON.stringify(err.message));
             res.end();
         }
