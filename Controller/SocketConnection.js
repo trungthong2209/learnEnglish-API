@@ -123,6 +123,8 @@ export default class SocketConnection {
                     // let user = JSON.parse(infoUser);
                     let data = this.formatMessage(HttpStatus, infoUser);
                     ws.to(groupId).emit(process.env.SEND_MESSAGE_PUBLIC, data);
+                    ws.emit(process.env.SEND_MESSAGE_PUBLIC, data)
+                    console.log(data)
                   })
                     .catch((reason) => {
                       ws.emit(process.env.SEND_MESSAGE_ERROR, JSON.stringify(reason));
@@ -141,6 +143,8 @@ export default class SocketConnection {
                 //let user = JSON.parse(infoUser);
                 let data = this.formatMessage(HttpStatus, infoUser);
                 ws.to(groupId).emit(process.env.SEND_MESSAGE_PUBLIC, data);
+                console.log(data)
+                ws.emit(process.env.SEND_MESSAGE_PUBLIC, data)
               }).catch((reason) => {
                 ws.emit(process.env.SEND_MESSAGE_ERROR, JSON.stringify(reason));
                 console.log(reason);
