@@ -48,7 +48,7 @@ export default class UploadFilesHelper {
                 secretAccessKey
             })
             form.on('error', (err)=>{
-                console.log(err)
+                reject(err);
             })
             if(form.bytesExpected <= 0){
                 resolve(null)
@@ -70,8 +70,8 @@ export default class UploadFilesHelper {
                 fs.unlink(file.path,  (err) => {
                     if (err) {
                         console.error(err);
+                        reject(err);
                     }
-                    console.log('Temp File Delete');
                 });      
             })
         })

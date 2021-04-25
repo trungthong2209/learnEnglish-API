@@ -8,11 +8,22 @@ export default class GroupController {
         let promise = new Promise((resolve, reject) => {
           let groupId = req.body.groupId;
           UploadFilesHelper.uploadFiles(req).then((data)=>{
-              Group.updateOne({_id: groupId},{$push: {files: data.Location}}).then((group)=>{
-                        let httpStatus = new HttpStatus(HttpStatus.OK, group);
+            Group.findOne({_id: groupId}).then((group)=>{
+                if(group != null){
+                    group.updateOne({$push: {files: data.Location}}).then((httpStatusGroup)=>{
+                        let httpStatus = new HttpStatus(HttpStatus.OK, httpStatusGroup);
                         resolve(httpStatus);
-              })
-              .catch((err) => {
+                    })
+                    .catch((err) => {
+                        reject(HttpStatus.getHttpStatus(err));
+                    });
+                }
+                else {
+                    let httpStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                        resolve(httpStatus);
+                }
+            })
+            .catch((err) => {
                 reject(HttpStatus.getHttpStatus(err));
             });
           })
