@@ -21,46 +21,37 @@ export default class SocketConnection {
     socketServer.on("connection", async (ws) => {
       let userId = await SocketConnection.checkAccessSocket(ws)
       if (userId != null) {
-        RedisConnection.checkHashExist(userId).then((isExist) => {
-          if (isExist == 1) {
-            RedisConnection.checkExpireHash(userId).then((time) => {
-              if (time > 0) {
+        RedisConnection.checkHashExist(userId).then((isHashExist) => {
+          if (isHashExist == 1) {
+            RedisConnection.checkExpireHash(userId).then((timeCheck) => {
+              if (timeCheck > 0) {
+                // 1 day
                 RedisConnection.expireHash(userId, 86400)
               }
             })
           }
         })
-          RedisConnection.getData(userId, process.env.KEY_SOCKET).then((socketIds)=>{
-                  if(socketIds == null){
-                    let arrSocketIds = [];
-                    arrSocketIds.push(ws.id)  
-                    RedisConnection.setData(userId, process.env.KEY_SOCKET, arrSocketIds)
-                  }
-                  else {
-                    socketIds.push(ws.id)
-                    RedisConnection.setData(userId, process.env.KEY_SOCKET, socketIds)
-                  }
-          })
-  }
-      // socketServer.use((ws, next)=>{
-      //   SocketConnection.checkAccessSocket(ws).then((userId)=>{
-      //     RedisConnection.getData(userId, process.env.KEY_SOCKET).then((socketIds)=>{
-      //       if(socketIds == null){
-      //         let arrSocketIds = [];
-      //         arrSocketIds.push(ws.id)  
-      //         RedisConnection.setData(userId, process.env.KEY_SOCKET, arrSocketIds)
-      //       }
-      //       else {
-      //         socketIds.push(ws.id)
-      //         RedisConnection.setData(userId, process.env.KEY_SOCKET, socketIds)
-      //       }
-      //       next();
-      //   })
-      //   .catch((error)=>{
-      //     next();
-      //   })
-      //     })
-      // })
+        RedisConnection.checkKeyExist(userId, process.env.INFO_USER).then((isKeyExist) => {
+          if (isKeyExist != 0) {
+            RedisConnection.getData(userId, process.env.KEY_SOCKET).then((socketIds) => {
+              if (socketIds == null) {
+                let arrSocketIds = [];
+                arrSocketIds.push(ws.id)
+                RedisConnection.setData(userId, process.env.KEY_SOCKET, arrSocketIds)
+              }
+              else {
+                socketIds.push(ws.id)
+                RedisConnection.setData(userId, process.env.KEY_SOCKET, socketIds)
+              }
+            })
+          }
+          else {
+            let reason ='Your info is empty, pls login again';
+            ws.emit(process.env.SEND_MESSAGE_ERROR, JSON.stringify(reason));
+            ws.disconnect();
+          }
+        })
+      }
       console.log("user has connected: " + ws.id);
       this.sendMessagePrivate(ws);
       this.joinGroup(ws, socketServer);
@@ -71,7 +62,7 @@ export default class SocketConnection {
       this.matchVolunteer(ws)
     });
   }
-  
+
   //check hear beat socket
   static hearBeat() {
     let hearBeat = {
@@ -85,42 +76,32 @@ export default class SocketConnection {
       SocketConnection.checkAccessSocket(ws).then((userId) => {
         if (userId != null) {
           PrivateMessageController.insertPrivateMessage(userId, data.sendToId, data.message).then((HttpStatus) => {
-               console.log(data.sendToId)
+            console.log(data.sendToId)
             RedisConnection.getData(data.sendToId, process.env.KEY_SOCKET).then((socketIds) => {
-              if(socketIds != null){
+              if (socketIds != null) {
                 if (socketIds.length > 0) {
                   RedisConnection.getData(userId, process.env.INFO_USER).then((infoUser) => {
                     let data = this.formatMessage(HttpStatus, infoUser);
-                     console.log(data)
-                    for(let socketId of socketIds){
-                      console.log("socket id: " + socketId)
+                    console.log(data)
+                    for (let socketId of socketIds) {
                       ws.to(socketId).emit(process.env.SEND_MESSAGE_PRIVATE, data)
-                      console.log('sent ' + socketId)
                     }
                   }).catch((reason) => {
                     ws.emit(process.env.SEND_MESSAGE_ERROR, JSON.stringify(reason));
-                    console.log(reason);
                   });
                 }
               }
-              else {
-                let reason = 'ERROR'
-                ws.emit(process.env.SEND_MESSAGE_ERROR, JSON.stringify(reason));
-              }
             })
               .catch((reason) => {
-                console.log(reason)
                 ws.emit(process.env.SEND_MESSAGE_ERROR, JSON.stringify(reason));
               });
           })
             .catch((reason) => {
-              console.log(reason)
               ws.emit(process.env.SEND_MESSAGE_ERROR, JSON.stringify(reason));
             });
         } else ws.disconnect();
       })
         .catch((reason) => {
-          console.log(reason)
           ws.disconnect();
         });
     });
@@ -187,7 +168,8 @@ export default class SocketConnection {
             if (data.group.indexOf(groupId) == -1) {
               Group.findOne({ _id: groupId }).then((group) => {
                 if (group.userJoin.length > 7) {
-                  ws.emit('joinGroup', "THE GROUP WAS FULL")
+                  let notify = "THE GROUP WAS FULL";
+                  ws.emit('joinGroup', notify)
                 }
                 else {
                   data.group.push(groupId)
@@ -219,7 +201,7 @@ export default class SocketConnection {
               let message = this.formatMessage(null, data)
               RedisConnection.setList(groupId, data._id).then(() => {
                 RedisConnection.getList(groupId).then((listUserOnline) => {
-                  console.log("listUserOnline: ")
+                  console.log("list Users Online in roomId: "+groupId)
                   console.log(listUserOnline)
                   socketServer.to(groupId).emit('listUserOnline', listUserOnline)
                   ws.broadcast.to(groupId).emit("joinGroup", message);
@@ -246,9 +228,9 @@ export default class SocketConnection {
       SocketConnection.checkAccessSocket(ws).then((userId) => {
         RedisConnection.getData(userId, process.env.INFO_USER).then((data) => {
           if (data != null) {
-            let i = data.group.indexOf(groupId)
-            if (i != -1) {
-              data.group.splice(i, 1)
+            let index = data.group.indexOf(groupId)
+            if (index != -1) {
+              data.group.splice(index, 1)
             }
             RedisConnection.setData(userId, process.env.INFO_USER, data).then(() => {
               Group.updateOne({ _id: groupId }, { $pull: { userJoin: userId } }).then(() => {
@@ -304,9 +286,9 @@ export default class SocketConnection {
                 let parseId = JSON.parse(arrVolunteer[0])
                 RedisConnection.getData(parseId, process.env.INFO_USER).then((volunteer) => {
                   RedisConnection.getData(parseId, process.env.KEY_SOCKET).then((volunteerSocketIds) => {
-                    if (volunteerSocketIds.length > 0 ) {
+                    if (volunteerSocketIds.length > 0) {
                       let dataVolunteer = SocketConnection.formatMessage(null, volunteer)
-                      for(let volunteerSocketId of volunteerSocketIds){
+                      for (let volunteerSocketId of volunteerSocketIds) {
                         ws.to(volunteerSocketId).emit('pairing', dataVolunteer)
                       }
                       RedisConnection.deleteOneOfList(topicId, parseId)
@@ -377,7 +359,7 @@ export default class SocketConnection {
       email: user.email,
     };
     if (HttpStatus != null) {
-        data.timeSend = HttpStatus.entity.timeSend,
+      data.timeSend = HttpStatus.entity.timeSend,
         data.message = HttpStatus.entity.message,
         data.authorId = HttpStatus.entity.authorId
     }
@@ -387,25 +369,25 @@ export default class SocketConnection {
     ws.on("disconnect", (reason) => {
       console.log(ws.id + " disconnected by reason: " + reason);
       RedisConnection.getData(userId, process.env.INFO_USER).then((data) => {
-        RedisConnection.getData(userId, process.env.KEY_SOCKET).then((wsIds)=>{
-          if(wsIds != null && wsIds.length > 1) {
-            if(wsIds.indexOf(ws.id) > -1){
-               wsIds.splice(wsIds.indexOf(ws.id), 1)
-               RedisConnection.setData(userId, process.env.KEY_SOCKET, wsIds)
+        RedisConnection.getData(userId, process.env.KEY_SOCKET).then((wsIds) => {
+          if (wsIds != null && wsIds.length > 1) {
+            if (wsIds.indexOf(ws.id) > -1) {
+              wsIds.splice(wsIds.indexOf(ws.id), 1)
+              RedisConnection.setData(userId, process.env.KEY_SOCKET, wsIds)
             }
           }
           else {
             RedisConnection.deleteKey(userId, process.env.KEY_SOCKET)
-            RedisConnection.expireHash(userId, 60)
-            if(data !=null){
-              if(data.group !== null && data.group !== undefined){
+            RedisConnection.expireHash(userId, 20)
+            if (data != null) {
+              if (data.group !== null && data.group !== undefined) {
                 data.group.map((gr) => {
                   RedisConnection.deleteOneOfList(gr, userId)
                   RedisConnection.getList(gr).then((listUsers) => {
                     ws.to(gr).emit('listUserOnline', listUsers)
                   })
                 })
-               }
+              }
             }
           }
         })
@@ -418,7 +400,7 @@ export default class SocketConnection {
       let token = ws.handshake.auth.token;
       let userId = Authentication.checkToken(token);
       if (userId != null) {
-           resolve(userId)
+        resolve(userId)
       }
       else {
         resolve(null)
