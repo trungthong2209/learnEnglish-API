@@ -17,9 +17,9 @@ router.get("/", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
-router.get("/getGroupsById", async (req, res) => {
+router.get("/getGroupsById/:id", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
-        let groupId = req.body._id;
+        let groupId = req.params.id;
             Group.getGroupById(groupId)
                 .then((httpStatus) => {
                     RouteHelper.processResponse(res, httpStatus);
