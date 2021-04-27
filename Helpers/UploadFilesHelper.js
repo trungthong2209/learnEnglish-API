@@ -41,6 +41,7 @@ export default class UploadFilesHelper {
                 if (err) {
                     reject(err)
                 }
+                console.log(files)
                 if(Object.values(files).length < 1){
                     reject(null)
                 }
@@ -59,7 +60,6 @@ export default class UploadFilesHelper {
                 reject(err);
             })
             form.on('aborted', (err) => {
-                console.log(err)
                 reject(err)
             })
             if (form.bytesExpected <= 0) {
