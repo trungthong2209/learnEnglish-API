@@ -63,9 +63,9 @@ router.delete("/delete-frame-id", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
-router.get("/get-frame-id", async (req, res) => {
+router.get("/get-frame-id/:id", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
-            let id = req.body._id;
+        let id = req.params.id;
             Frame.getByIdFrame(id)
                 .then((httpStatus) => {
                     RouteHelper.processResponse(res, httpStatus);

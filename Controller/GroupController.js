@@ -4,49 +4,54 @@ import UploadFilesHelper from '../Helper/UploadFilesHelper.js'
 import RedisConnection from "../Helper/RedisConnection.js";
 import mongoose from 'mongoose';
 export default class GroupController {
-    static uploadFiles(req){
+    static uploadFiles(req) {
         let promise = new Promise((resolve, reject) => {
-          let groupId = req.body.groupId;
-          console.log(groupId);
-          UploadFilesHelper.uploadFiles(req).then((data)=>{
-            Group.findOne({_id: groupId}).then((group)=>{
-                if(group != null){
-                    group.updateOne({$push: {files: data.Location}}).then((httpStatusGroup)=>{
-                        let httpStatus = new HttpStatus(HttpStatus.OK, httpStatusGroup);
-                        resolve(httpStatus);
+            let groupId = req.body.groupId;
+            UploadFilesHelper.uploadFiles(req).then((data) => {
+                if (data) {
+                    Group.findOne({ _id: groupId }).then((group) => {
+                        if (group != null) {
+                            group.updateOne({ $push: { files: data.Location} }).then(() => {
+                                let httpStatus = new HttpStatus(HttpStatus.OK, data);
+                                resolve(httpStatus);
+                            })
+                                .catch((err) => {
+                                    reject(HttpStatus.getHttpStatus(err));
+                                });
+                        }
+                        else {
+                            let httpStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                            resolve(httpStatus);
+                        }
                     })
-                    .catch((err) => {
-                        reject(HttpStatus.getHttpStatus(err));
-                    });
+                        .catch((err) => {
+                            reject(HttpStatus.getHttpStatus(err));
+                        });
                 }
                 else {
-                    let httpStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
-                        resolve(httpStatus);
+                    let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
+                    resolve(httpStatus);
                 }
             })
-            .catch((err) => {
-                reject(HttpStatus.getHttpStatus(err));
-            });
-          })
-          .catch((err) => {
-            reject(HttpStatus.getHttpStatus(err));
-        });
+                .catch((err) => {
+                    reject(HttpStatus.getHttpStatus(err));
+                });
         });
         return promise;
     }
-    static getGroupsByUserId(userId){
+    static getGroupsByUserId(userId) {
         let promise = new Promise((resolve, reject) => {
-            Group.find({userJoin: userId}).then((document) => {
+            Group.find({ userJoin: userId }).then((document) => {
                 let doc = []
-                document.map((value)=>{
+                document.map((value) => {
                     doc.push(value._id)
                 })
                 let httpStatus = new HttpStatus(HttpStatus.OK, doc);
                 resolve(httpStatus);
             })
-            .catch((err) => {
-                reject(HttpStatus.getHttpStatus(err));
-            });
+                .catch((err) => {
+                    reject(HttpStatus.getHttpStatus(err));
+                });
         });
         return promise;
     }
@@ -63,7 +68,7 @@ export default class GroupController {
                     let newGroup = new Group(data);
                     let imageURI = await UploadFilesHelper.convertImageToSave(data);
                     newGroup.groupCode = groupCode;
-                    if(imageURI != null){
+                    if (imageURI != null) {
                         newGroup.image = imageURI.Location;
                     }
                     newGroup.save().then((document) => {
@@ -174,7 +179,7 @@ export default class GroupController {
                 let httpStatus = new HttpStatus(HttpStatus.OK, document);
                 resolve(httpStatus);
             })
-            .catch((err) => {
+                .catch((err) => {
                     reject(HttpStatus.getHttpStatus(err));
                 });
         });
@@ -286,7 +291,7 @@ export default class GroupController {
         });
         return promise;
     }
-    
+
     static randomCode() {
         let code = Date.now().toString(36).substring(2, 5) + Math.random().toString(36).substring(2, 5);
         if (code.length < 6) {
