@@ -6,11 +6,11 @@ import logger from 'morgan';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { createServer } from 'http';
-import SocketConnection from './Controller/SocketConnection.js'
-import RedisConnection from './Helper/RedisConnection.js'
+import SocketConnection from './Controllers/SocketConnection.js'
+import RedisConnection from './Helpers/RedisConnection.js'
 import Debug from 'debug';
 const debug = Debug('Learning-English-API:server')
-import MongoHelper from './Helper/MongoHelper.js';
+import MongoHelper from './Helpers/MongoHelper.js';
 
 //import bodyParser from 'body-parser'
 const __dirname = path.resolve();

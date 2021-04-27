@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import HttpStatus from "../Helper/HttpStatus.js";
+import HttpStatus from "../Helpers/HttpStatus.js";
 export default class Authentication {
     static checkAccess(dataAccessCodes, req) {
         let promise = new Promise((resolve, reject) => {

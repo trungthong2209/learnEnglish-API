@@ -1,7 +1,7 @@
 import express from "express";
-import RouteHelper from "../Helper/RouteHelper.js";
-import PrivateMessageController from "../Controller/PrivateMessageController.js";
-import Authentication from "../Helper/Authencation.js";
+import RouteHelper from "../Helpers/RouteHelper.js";
+import PrivateMessageController from "../Controllers/PrivateMessageController.js";
+import Authentication from "../Helpers/Authencation.js";
 const router = express.Router();
 router.get("/", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {

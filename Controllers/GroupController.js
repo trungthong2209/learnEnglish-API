@@ -1,16 +1,18 @@
-import Group from "../Model/Group.js";
-import HttpStatus from "../Helper/HttpStatus.js";
-import UploadFilesHelper from '../Helper/UploadFilesHelper.js'
-import RedisConnection from "../Helper/RedisConnection.js";
+import Group from "../Models/Group.js";
+import HttpStatus from "../Helpers/HttpStatus.js";
+import UploadFilesHelper from '../Helpers/UploadFilesHelper.js'
+import RedisConnection from "../Helpers/RedisConnection.js";
 import mongoose from 'mongoose';
 export default class GroupController {
     static uploadFiles(req) {
         let promise = new Promise((resolve, reject) => {
             let groupId = req.body.groupId;
             UploadFilesHelper.uploadFiles(req).then((data) => {
+                console.log('data');
+                console.log(data);
                 if (data) {
                     Group.findOne({ _id: groupId }).then((group) => {
-                        if (group != null) {
+                        if (group) {
                             group.updateOne({ $push: { files: data.Location} }).then(() => {
                                 let httpStatus = new HttpStatus(HttpStatus.OK, data);
                                 resolve(httpStatus);

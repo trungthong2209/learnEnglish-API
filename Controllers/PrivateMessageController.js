@@ -1,7 +1,7 @@
-import PrivateMessage from "../Model/PrivateMessage.js";
-import HttpStatus from "../Helper/HttpStatus.js";
-import IsoDateHelper from "../Helper/IsoDateHelper.js"
-import UploadFileHelper from '../Helper/UploadFilesHelper.js'
+import PrivateMessage from "../Models/PrivateMessage.js";
+import HttpStatus from "../Helpers/HttpStatus.js";
+import IsoDateHelper from "../Helpers/IsoDateHelper.js"
+import UploadFileHelper from '../Helpers/UploadFilesHelper.js'
 export default class PrivateMessageController {
     static  insertPrivateMessage(authorId, sendToId, message) {
         let promise = new Promise( async (resolve, reject) => {

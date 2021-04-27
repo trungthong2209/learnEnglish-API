@@ -56,14 +56,14 @@ export default class UploadFilesHelper {
                 secretAccessKey
             })
             form.on('error', (err) => {
-                reject(null);
+                reject(err);
             })
             form.on('aborted', (err) => {
-                console.log("err aborted");
-                reject(null)
+                console.log(err)
+                reject(err)
             })
             if (form.bytesExpected <= 0) {
-                resolve(null)
+                resolve(err)
             }
             form.on('file', (field, file) => {
                 let fileContent = fs.readFileSync(file.path);

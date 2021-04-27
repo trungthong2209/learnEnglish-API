@@ -1,7 +1,7 @@
-import Frame from "../Model/Frame.js";
-import HttpStatus from "../Helper/HttpStatus.js";
-import IsoDateHelper from "../Helper/IsoDateHelper.js"
-import RedisConnection from '../Helper/RedisConnection.js'
+import Frame from "../Models/Frame.js";
+import HttpStatus from "../Helpers/HttpStatus.js";
+import IsoDateHelper from "../Helpers/IsoDateHelper.js"
+import RedisConnection from '../Helpers/RedisConnection.js'
 export default class FrameController {
     static getAllFrame() {
         let promise = new Promise((resolve, reject) => {
