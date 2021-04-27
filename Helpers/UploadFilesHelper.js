@@ -55,7 +55,7 @@ export default class UploadFilesHelper {
                 secretAccessKey
             })
             form.on('error', (err) => {
-                res.send();
+                reject(err)
             })
             form.on('aborted', (err) => {
                 reject(err)
