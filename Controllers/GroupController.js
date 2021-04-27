@@ -8,7 +8,8 @@ export default class GroupController {
         let promise = new Promise((resolve, reject) => {
              let groupId = req.body.groupId;
             Group.findOne({ _id: groupId }).then((group) => {
-                if (group) {
+                if (group != null) {
+                    console.log(group)
                     UploadFilesHelper.uploadFiles(req, res).then((data) => {
                         if (data) {
                             group.updateOne({ $push: { files: data.Location} }).then(() => {
