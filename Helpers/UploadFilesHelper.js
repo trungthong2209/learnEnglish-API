@@ -60,9 +60,6 @@ export default class UploadFilesHelper {
             form.on('aborted', (err) => {
                 reject(err)
             })
-            if (form.bytesExpected <= 0) {
-                resolve(err)
-            }
             form.on('file', (field, file) => {
                 let fileContent = fs.readFileSync(file.path);
                 console.log('file: ');
