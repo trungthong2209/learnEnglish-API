@@ -7,9 +7,9 @@ export default class GroupController {
     static uploadFiles(req, res) {
         let promise = new Promise((resolve, reject) => {
              let groupId = req.body.groupId;
+            console.log(groupId)
             Group.findOne({ _id: groupId }).then((group) => {
                 if (group != null) {
-                    console.log(group)
                     UploadFilesHelper.uploadFiles(req, res).then((data) => {
                         if (data) {
                             group.updateOne({ $push: { files: data.Location} }).then(() => {
