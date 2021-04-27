@@ -29,7 +29,7 @@ export default class UploadFilesHelper {
         })
         return promise
     }
-    static uploadFiles(req) {
+    static uploadFiles(req, res) {
         let promise = new Promise((resolve, reject) => {
             //console.log(req.files)         
             let form = formidable.IncomingForm();
@@ -41,11 +41,9 @@ export default class UploadFilesHelper {
                 if (err) {
                     reject(err)
                 }
-                console.log(files)
                 if(Object.values(files).length < 1){
                     reject(null)
                 }
-
             });
             let bucketName = process.env.S3_NAME
             let region = process.env.S3_REGION
@@ -57,7 +55,7 @@ export default class UploadFilesHelper {
                 secretAccessKey
             })
             form.on('error', (err) => {
-                reject(err);
+                res.send();
             })
             form.on('aborted', (err) => {
                 reject(err)
@@ -67,6 +65,8 @@ export default class UploadFilesHelper {
             }
             form.on('file', (field, file) => {
                 let fileContent = fs.readFileSync(file.path);
+                console.log('file: ');
+                console.log(file)
                 let uploadParams = {
                     Bucket: bucketName,
                     Body: fileContent,

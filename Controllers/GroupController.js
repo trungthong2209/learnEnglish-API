@@ -4,13 +4,13 @@ import UploadFilesHelper from '../Helpers/UploadFilesHelper.js'
 import RedisConnection from "../Helpers/RedisConnection.js";
 import mongoose from 'mongoose';
 export default class GroupController {
-    static uploadFiles(req) {
+    static uploadFiles(req, res) {
         let promise = new Promise((resolve, reject) => {
-            let groupId = req.body.groupId;
-            UploadFilesHelper.uploadFiles(req).then((data) => {
-                if (data) {
-                    Group.findOne({ _id: groupId }).then((group) => {
-                        if (group) {
+             let groupId = req.body.groupId;
+            Group.findOne({ _id: groupId }).then((group) => {
+                if (group) {
+                    UploadFilesHelper.uploadFiles(req, res).then((data) => {
+                        if (data) {
                             group.updateOne({ $push: { files: data.Location} }).then(() => {
                                 let httpStatus = new HttpStatus(HttpStatus.OK, data);
                                 resolve(httpStatus);
@@ -20,23 +20,24 @@ export default class GroupController {
                                 });
                         }
                         else {
-                            let httpStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                            let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
                             resolve(httpStatus);
                         }
-                    })
+                        })
                         .catch((err) => {
-                            reject(HttpStatus.getHttpStatus(err));
+                            let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, err);
+                            resolve(httpStatus);
                         });
                 }
                 else {
-                    let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
+                    let httpStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
                     resolve(httpStatus);
                 }
-                })
+            })
                 .catch((err) => {
-                    let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, err);
-                    resolve(httpStatus);
+                    reject(HttpStatus.getHttpStatus(err));
                 });
+
         });
         return promise;
     }
