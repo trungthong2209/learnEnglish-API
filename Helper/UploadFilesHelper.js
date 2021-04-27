@@ -30,15 +30,22 @@ export default class UploadFilesHelper {
         return promise
     }
     static uploadFiles(req) {
-        let promise = new Promise((resolve, reject) => {   
-           //console.log(req.files)         
+        let promise = new Promise((resolve, reject) => {
+            //console.log(req.files)         
             let form = formidable.IncomingForm();
             //form.uploadDir = './uploads';
             form.keepExtensions = true;
             form.multiples = true;
             form.maxFieldsSize = 10 * 1024 * 1024; //10MB
-            form.parse(req)
-            console.log(form)
+            form.parse(req, (err, fields, files) => {
+                if (err) {
+                    reject(err)
+                }
+                if(Object.values(files).length < 1){
+                    reject(null)
+                }
+
+            });
             let bucketName = process.env.S3_NAME
             let region = process.env.S3_REGION
             let accessKeyId = process.env.S3_ACCESS_KEY
@@ -48,32 +55,36 @@ export default class UploadFilesHelper {
                 accessKeyId,
                 secretAccessKey
             })
-            form.on('error', (err)=>{
-                reject(err);
+            form.on('error', (err) => {
+                reject(null);
             })
-            if(form.bytesExpected <= 0){
+            form.on('aborted', (err) => {
+                console.log("err aborted");
+                reject(null)
+            })
+            if (form.bytesExpected <= 0) {
                 resolve(null)
             }
-            form.on('file', (field, file)=>{
+            form.on('file', (field, file) => {
                 let fileContent = fs.readFileSync(file.path);
                 let uploadParams = {
                     Bucket: bucketName,
                     Body: fileContent,
                     Key: Date.now() + '.' + file.name.split('.').pop(),
-                    ContentType:  file.type            
+                    ContentType: file.type
                 }
-                s3.upload(uploadParams, (err, data)=>{
-                    if(err) {
+                s3.upload(uploadParams, (err, data) => {
+                    if (err) {
                         reject(err);
                     }
                     resolve(data)
-                })      
-                fs.unlink(file.path,  (err) => {
+                })
+                fs.unlink(file.path, (err) => {
                     if (err) {
                         console.error(err);
                         reject(err);
                     }
-                });      
+                });
             })
         })
         return promise
