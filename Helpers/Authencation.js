@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import HttpStatus from "../Helpers/HttpStatus.js";
+import RedisConnection from "../Helpers/RedisConnection.js"
 export default class Authentication {
     static checkAccess(dataAccessCodes, req) {
         let promise = new Promise((resolve, reject) => {
@@ -13,9 +14,21 @@ export default class Authentication {
                     }
                     else {
                         if (decoded._id) {
-                            let rejectStatus = new HttpStatus(HttpStatus.OK, decoded);
-                            rejectStatus.message = "AUTHORIZATED";
-                            resolve(rejectStatus);
+                            RedisConnection.checkHashExist(decoded._id).then((isExist)=>{
+                                if(isExist==1){
+                                    let rejectStatus = new HttpStatus(HttpStatus.OK, decoded);
+                                    rejectStatus.message = "AUTHORIZATED";
+                                    resolve(rejectStatus);
+                                }
+                                else {
+                                    let rejectStatus = new HttpStatus(HttpStatus.UNAUTHORISED, null);
+                                    rejectStatus.message = 'NOT AUTHORIZATE';
+                                    reject(rejectStatus);
+                                }
+                            })
+                            .catch((err) => {
+                                reject(HttpStatus.getHttpStatus(err));
+                            });
                         }
                         else {
                             let rejectStatus = new HttpStatus(HttpStatus.UNAUTHORISED, null);
