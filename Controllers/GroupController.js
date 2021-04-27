@@ -11,7 +11,7 @@ export default class GroupController {
             Group.findOne({ _id: groupId }).then((group) => {
                 if (group != null) {
                     UploadFilesHelper.uploadFiles(req, res).then((data) => {
-                        if (data) {
+                        if (data != null) {
                             group.updateOne({ $push: { files: data.Location} }).then(() => {
                                 let httpStatus = new HttpStatus(HttpStatus.OK, data);
                                 resolve(httpStatus);
@@ -21,12 +21,12 @@ export default class GroupController {
                                 });
                         }
                         else {
-                            let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
+                            let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, "file null");
                             resolve(httpStatus);
                         }
                         })
                         .catch((err) => {
-                            let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, err);
+                            let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, " catch file null");
                             resolve(httpStatus);
                         });
                 }
