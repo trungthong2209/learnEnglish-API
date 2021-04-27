@@ -37,7 +37,8 @@ export default class UploadFilesHelper {
             form.keepExtensions = true;
             form.multiples = true;
             form.maxFieldsSize = 10 * 1024 * 1024; //10MB
-            form.parse(req);
+            form.parse(req)
+            console.log(form)
             let bucketName = process.env.S3_NAME
             let region = process.env.S3_REGION
             let accessKeyId = process.env.S3_ACCESS_KEY
