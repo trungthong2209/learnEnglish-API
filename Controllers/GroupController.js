@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 export default class GroupController {
     static uploadFiles(req, res) {
         let promise = new Promise((resolve, reject) => {
-             let groupId = req.body.groupId;
+             let groupId = req.params.id;
             console.log(groupId)
             Group.findOne({ _id: groupId }).then((group) => {
                 if (group != null) {

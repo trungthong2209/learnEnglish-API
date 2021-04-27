@@ -49,7 +49,7 @@ router.post("/insert-group", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
-router.post("/upload-files", async (req, res) => {
+router.post("/upload-files/:id", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {        
     Group.uploadFiles(req, res).then((httpStatus) => {
                     RouteHelper.processResponse(res, httpStatus);
