@@ -8,8 +8,6 @@ export default class GroupController {
         let promise = new Promise((resolve, reject) => {
             let groupId = req.body.groupId;
             UploadFilesHelper.uploadFiles(req).then((data) => {
-                console.log('data');
-                console.log(data);
                 if (data) {
                     Group.findOne({ _id: groupId }).then((group) => {
                         if (group) {
@@ -34,9 +32,10 @@ export default class GroupController {
                     let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
                     resolve(httpStatus);
                 }
-            })
+                })
                 .catch((err) => {
-                    reject(HttpStatus.getHttpStatus(err));
+                    let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, err);
+                    resolve(httpStatus);
                 });
         });
         return promise;
