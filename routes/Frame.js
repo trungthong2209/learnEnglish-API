@@ -1,7 +1,7 @@
 import express from "express";
-import RouteHelper from "../Helper/RouteHelper.js";
-import Frame from "../Controller/FrameController.js";
-import Authentication from "../Helper/Authencation.js";
+import RouteHelper from "../Helpers/RouteHelper.js";
+import Frame from "../Controllers/FrameController.js";
+import Authentication from "../Helpers/Authencation.js";
 const router = express.Router();
 router.get("/", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {

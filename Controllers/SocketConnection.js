@@ -1,9 +1,9 @@
 import { Server } from "socket.io";
-import RedisConnection from "../Helper/RedisConnection.js";
-import Authentication from "../Helper/Authencation.js";
+import RedisConnection from "../Helpers/RedisConnection.js";
+import Authentication from "../Helpers/Authencation.js";
 import PrivateMessageController from "./PrivateMessageController.js";
 import PublicMessageController from "./PublicMessageController.js";
-import Group from '../Model/Group.js'
+import Group from '../Models/Group.js'
 export default class SocketConnection {
   static Initialise(httpServer) {
     let socketServer = new Server(httpServer, {

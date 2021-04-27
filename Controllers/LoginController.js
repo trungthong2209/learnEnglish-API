@@ -1,10 +1,10 @@
-import User from "../Model/User.js";
-import GroupController from '../Controller/GroupController.js'
+import User from "../Models/User.js";
+import GroupController from '../Controllers/GroupController.js'
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import HttpStatus from "../Helper/HttpStatus.js"
-import RedisConnection from '../Helper/RedisConnection.js'
-import Authentication from "../Helper/Authencation.js";
+import HttpStatus from "../Helpers/HttpStatus.js"
+import RedisConnection from '../Helpers/RedisConnection.js'
+import Authentication from "../Helpers/Authencation.js";
 export default class LoginController {
     static checkLogin(data) {
         let promise = new Promise((resolve, reject) => {

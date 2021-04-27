@@ -1,10 +1,10 @@
-import User from "../Model/User.js";
+import User from "../Models/User.js";
 import bcrypt from "bcrypt";
-import HttpStatus from "../Helper/HttpStatus.js";
+import HttpStatus from "../Helpers/HttpStatus.js";
 import mongoose from 'mongoose';
-import RedisConnection from "../Helper/RedisConnection.js";
-import UploadFileHelper from '../Helper/UploadFilesHelper.js'
-import IsoDateHelper from "../Helper/IsoDateHelper.js"
+import RedisConnection from "../Helpers/RedisConnection.js";
+import UploadFileHelper from '../Helpers/UploadFilesHelper.js'
+import IsoDateHelper from "../Helpers/IsoDateHelper.js"
 export default class UserController {
     static register(data) {
         let promise = new Promise((resolve, reject) => {

@@ -1,8 +1,8 @@
 import express from "express";
-import Login from '../Controller/LoginController.js'
-import RouteHelper from "../Helper/RouteHelper.js"
-import UserController from '../Controller/UserController.js'
-import Authentication from "../Helper/Authencation.js";
+import Login from '../Controllers/LoginController.js'
+import RouteHelper from "../Helpers/RouteHelper.js"
+import UserController from '../Controllers/UserController.js'
+import Authentication from "../Helpers/Authencation.js";
 const router = express.Router();
 
 router.post('/register', async (req, res) => {
