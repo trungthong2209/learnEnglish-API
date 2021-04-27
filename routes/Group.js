@@ -50,12 +50,17 @@ router.post("/insert-group", async (req, res) => {
         });
 });
 router.post("/upload-files", async (req, res) => {
-            Group.uploadFiles(req).then((httpStatus) => {
+    Authentication.checkAccess(null, req).then((user) => {        
+    Group.uploadFiles(req).then((httpStatus) => {
                     RouteHelper.processResponse(res, httpStatus);
                 })
                 .catch((err) => {
                     console.log(err)
                     RouteHelper.processErrorResponse(res, err);
                 });
+        })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
 });
 export default router;

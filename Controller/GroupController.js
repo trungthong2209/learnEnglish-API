@@ -7,6 +7,7 @@ export default class GroupController {
     static uploadFiles(req){
         let promise = new Promise((resolve, reject) => {
           let groupId = req.body.groupId;
+          console.log(groupId);
           UploadFilesHelper.uploadFiles(req).then((data)=>{
             Group.findOne({_id: groupId}).then((group)=>{
                 if(group != null){
@@ -119,6 +120,7 @@ export default class GroupController {
                         topicId: '$frames._id',
                         topicName: '$frames.topic',
                         timeCreate: 1,
+                        files: 1,
                         videoLink: { $ifNull: ["$videoLink", ""] },
                         timeTeaching: { $ifNull: ["$timeTeaching", ""] },
                         manager: {
@@ -152,6 +154,7 @@ export default class GroupController {
                         groupCode: { $first: "$groupCode" },
                         manager: { $first: "$manager" },
                         image: { $first: "$image" },
+                        files: { $first: "$files" },
                         topicId: { $first: "$topicId" },
                         topicName: { $first: "$topicName" },
                         videoLink: { $first: "$videoLink" },
@@ -223,6 +226,7 @@ export default class GroupController {
                         topicId: '$frames._id',
                         topicName: '$frames.topic',
                         timeCreate: 1,
+                        files: 1,
                         videoLink: { $ifNull: ["$videoLink", ""] },
                         timeTeaching: { $ifNull: ["$timeTeaching", ""] },
                         manager: {
@@ -254,6 +258,7 @@ export default class GroupController {
                     $group: {
                         _id: "$_id",
                         groupCode: { $first: "$groupCode" },
+                        files: { $first: "$files" },
                         manager: { $first: "$manager" },
                         image: { $first: "$image" },
                         topicId: { $first: "$topicId" },
