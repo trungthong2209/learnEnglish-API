@@ -6,8 +6,8 @@ import mongoose from 'mongoose';
 export default class GroupController {
     static uploadFiles(req, res) {
         let promise = new Promise((resolve, reject) => {
-             let groupId = req.params.id;
-            console.log(groupId)
+            let groupId = req.params.id;
+            //let groupId = "60685c24a8953bc885582b7a";
             Group.findOne({ _id: groupId }).then((group) => {
                 if (group != null) {
                     UploadFilesHelper.uploadFiles(req, res).then((data) => {
@@ -26,7 +26,7 @@ export default class GroupController {
                         }
                         })
                         .catch((err) => {
-                            let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, " catch file null");
+                            let httpStatus = new HttpStatus(HttpStatus.BAD_REQUEST, err);
                             resolve(httpStatus);
                         });
                 }

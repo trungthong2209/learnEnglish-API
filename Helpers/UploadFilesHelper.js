@@ -1,6 +1,8 @@
 import S3 from 'aws-sdk/clients/s3.js';
 import formidable from 'formidable';
 import fs from 'fs';
+import xlsx from 'xlsx';
+
 export default class UploadFilesHelper {
     static convertImageToSave(data) {
         let promise = new Promise((resolve, reject) => {
@@ -31,8 +33,7 @@ export default class UploadFilesHelper {
     }
     static uploadFiles(req, res) {
         let promise = new Promise((resolve, reject) => {
-            //console.log(req.files)         
-            let form = formidable.IncomingForm();
+            let form = new formidable.IncomingForm();
             //form.uploadDir = './uploads';
             form.keepExtensions = true;
             form.multiples = true;
@@ -62,8 +63,7 @@ export default class UploadFilesHelper {
             })
             form.on('file', (field, file) => {
                 let fileContent = fs.readFileSync(file.path);
-                console.log('file: ');
-                console.log(file)
+                console.log(file.name)
                 let uploadParams = {
                     Bucket: bucketName,
                     Body: fileContent,
@@ -76,6 +76,52 @@ export default class UploadFilesHelper {
                     }
                     resolve(data)
                 })
+                fs.unlink(file.path, (err) => {
+                    if (err) {
+                        console.error(err);
+                        reject(err);
+                    }
+                });
+            })
+        })
+        return promise
+    }
+    static uploadFilesExcel(req, res) {
+        let promise = new Promise((resolve, reject) => {
+            let form = new formidable.IncomingForm();
+            //form.uploadDir = './uploads';
+            form.keepExtensions = true;
+            form.multiples = true;
+            form.maxFieldsSize = 10 * 1024 * 1024; //10MB
+            form.parse(req, (err, fields, files) => {
+                if (err) {
+                    reject(err)
+                }
+                if(Object.values(files).length < 1){
+                    reject(null)
+                }
+            });
+            form.on('error', (err) => {
+                reject(err)
+            })
+            form.on('aborted', (err) => {
+                reject(err)
+            })
+         
+            form.on('file', (field, file) => {
+                let fileWork = xlsx.readFile(file.path);
+                if(['xls', 'xlsx', 'xlsm'].indexOf(file.name.split('.').pop())==-1){
+                    resolve(null)
+                }
+                let sheet1 = fileWork.SheetNames[0];
+                let data = fileWork.Sheets[sheet1];
+                let body = xlsx.utils.sheet_to_json(data)
+                body.map((raw)=>{
+                    if(raw.A == undefined || raw.B == undefined  || raw.C == undefined || raw.D == undefined || raw.question == undefined || raw.correct == undefined){
+                        resolve(null)
+                    }
+                })
+                resolve(body)
                 fs.unlink(file.path, (err) => {
                     if (err) {
                         console.error(err);

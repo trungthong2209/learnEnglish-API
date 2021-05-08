@@ -24,6 +24,7 @@ import Frame from "./routes/Frame.js"
 import Group from "./routes/Group.js"
 import PrivateMessage from "./routes/PrivateMessage.js"
 import PublicMessage from "./routes/PublicMessage.js"
+import Course from "./routes/Course.js"
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(cors())
@@ -53,6 +54,7 @@ app.use('/', User);
 app.use('/privateMessage', PrivateMessage);
 app.use('/frames', Frame);
 app.use('/groups', Group);
+app.use('/courses', Course);
 app.use('/publicMessage', PublicMessage);
 app.get('/websocket',  (req, res) => {
    res.render('room')   
