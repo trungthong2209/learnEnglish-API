@@ -275,7 +275,7 @@ export default class SocketConnection {
   //Matching volunteers
   static matchVolunteer(ws) {
     ws.on('matchVolunteers', (topicId) => {
-      console.log('1')
+      console.log('start the function match')
       console.log("topicId" + topicId)
       SocketConnection.checkAccessSocket(ws).then((authorId) => {
         if (authorId != null) {
