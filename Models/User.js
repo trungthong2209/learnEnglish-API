@@ -10,6 +10,7 @@ let User = new mongoose.Schema({
     action: { type: Boolean, default: true },
     numberPhone: { type: String },
     token: { type: String },
+    score: {type: Number},
     avatar: { type: String },
     ratings: { type: mongoose.Schema.ObjectId},
     timeCreate: { type: Number, default: Date.now },
@@ -17,8 +18,10 @@ let User = new mongoose.Schema({
     address: { type: String },
     group: [{ type: mongoose.Schema.ObjectId}],
     topics: [{ type: mongoose.Schema.ObjectId}],
-    certificates: { type: String },
+    certificates: [{ type: String }],
+    facebookLink: { type: String }, 
+    instagramLink: { type: String }, 
 });
-User.index({ '_id': 1, 'Group': 1, 'timeCreate': 1 })
+User.index({ '_id': 1, 'group': 1, 'timeCreate': 1 })
 
 export default mongoose.model('User', User)

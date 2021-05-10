@@ -14,7 +14,8 @@ export default class Authentication {
                     }
                     else {
                         if (decoded._id) {
-                            RedisConnection.checkHashExist(decoded._id).then((isExist)=>{
+                            RedisConnection.checkHashExist(decoded._id)
+                            .then((isExist)=>{
                                 if(isExist==1){
                                     let rejectStatus = new HttpStatus(HttpStatus.OK, decoded);
                                     rejectStatus.message = "AUTHORIZATED";

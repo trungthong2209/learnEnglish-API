@@ -31,9 +31,9 @@ router.post('/logout', async (req, res) => {
             RouteHelper.processErrorResponse(res, err);
         });
 })
-router.get('/profile', async (req, res) => {
+router.get('/profile/:id', async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
-        let userId = user.entity._id;
+        let userId = req.params.id;;
         UserController.getUserById(userId).then((httpStatus) => {
             RouteHelper.processResponse(res, httpStatus);
         })
