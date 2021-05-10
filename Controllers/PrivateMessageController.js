@@ -33,7 +33,12 @@ export default class PrivateMessageController {
             pipeList.push(
                 {
                     $match: {
-                        uniqueId: authorId + recipientId
+                        $and:[
+                            {$or:[
+                            {uniqueId: authorId + recipientId},
+                            {uniqueId: recipientId + authorId},
+                        ]}
+                    ]   
                     }
                 },
                 {

@@ -48,6 +48,17 @@ export default class UserController {
                     if(imageURI != null){
                         updateUser.avatar = imageURI.Location;
                     }
+                    if(data.certificates != null){
+                        let uriCertificates = await UploadFileHelper.uploadCertificates(data);
+                        if(updateUser.certificates != null)
+                        {
+                            updateUser.certificates.push(uriCertificates.Location);
+                        }
+                        else {
+                            updateUser.certificates = uriCertificates.Location;
+                        }
+                        
+                    }
                     let timeUpdate = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
                     updateUser.timeUpdate = timeUpdate;
                     bcrypt.hash(data.password, 10).then((hashedPassword) => {
@@ -104,11 +115,24 @@ export default class UserController {
                 if (user != undefined) {
                     let timeUpdate = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
                     data.timeUpdate = timeUpdate;
+                    let arrTopics = [];
+                    if(user.topics != null ){
+                         arrTopics = user.topics;
+                        if(user.topics.indexOf(data.topics) == -1){
+                            arrTopics.push(data.topics);
+                        }
+                    }
+                    else {
+                        arrTopics = data.topics;
+                    }
+                    data.topics = arrTopics;
                     user.updateOne(data)
                             .then(() => {
+                                console.log(user)
                                 RedisConnection.getData(data._id,process.env.INFO_USER).then((info)=>{
                                     info.role = data.role;
-                                    RedisConnection.setData(data._id,process.env.INFO_USER,info)
+                                    info.topics = arrTopics;
+                                    RedisConnection.setData(data._id,process.env.INFO_USER, info)
                                     let httpStatusStaff = new HttpStatus(HttpStatus.OK, info);
                                     resolve(httpStatusStaff);
                                 })
@@ -191,6 +215,8 @@ export default class UserController {
                         avatar: 1,
                         sex: 1,
                         _id: 1,
+                        facebookLink: 1,
+                        instagramLink: 1,
                         group: {
                                 $ifNull: [{
                                     groupCode: '$groupOfUser.groupCode',
@@ -218,6 +244,8 @@ export default class UserController {
                         email: { $first: "$email" },
                         avatar: { $first: "$avatar" },
                         sex: { $first: "$sex" },
+                        facebookLink:  { $first: "$facebookLink" },
+                        instagramLink:  { $first: "$instagramLink" },
                         groups: {
                             $push: {
                                 group: "$group",

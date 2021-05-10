@@ -7,7 +7,6 @@ export default class GroupController {
     static uploadFiles(req, res) {
         let promise = new Promise((resolve, reject) => {
             let groupId = req.params.id;
-            //let groupId = "60685c24a8953bc885582b7a";
             Group.findOne({ _id: groupId }).then((group) => {
                 if (group != null) {
                     UploadFilesHelper.uploadFiles(req, res).then((data) => {
@@ -62,7 +61,7 @@ export default class GroupController {
         let promise = new Promise((resolve, reject) => {
             RedisConnection.getData(data.userCreate, process.env.INFO_USER).then(async (user) => {
                 if (user.role == 'student') {
-                    let reason = 'You don’t have permission to create group'
+                    let reason = 'You don’t have permission to create group';
                     let httpStatus = new HttpStatus(HttpStatus.FORBIDDEN, reason);
                     resolve(httpStatus);
                 }
@@ -124,6 +123,7 @@ export default class GroupController {
                         _id: 1,
                         groupCode: 1,
                         image: 1,
+                        groupName: 1,
                         userJoin: { $ifNull: ["$userJoin", ""] },
                         topicId: '$frames._id',
                         topicName: '$frames.topic',
@@ -161,12 +161,14 @@ export default class GroupController {
                         _id: "$_id",
                         groupCode: { $first: "$groupCode" },
                         manager: { $first: "$manager" },
+                        groupName: { $first: "$groupName" },
                         image: { $first: "$image" },
                         files: { $first: "$files" },
                         topicId: { $first: "$topicId" },
                         topicName: { $first: "$topicName" },
                         videoLink: { $first: "$videoLink" },
                         timeTeaching: { $first: "$timeTeaching" },
+                        timeCreate : { $first: "$timeCreate" },
                         userJoinGroup: {
                             $push: {
                                 userName: "$userJoinGroup.userName",
@@ -176,6 +178,11 @@ export default class GroupController {
                             }
                         }
                     },
+                },
+                {
+                    $sort: {
+                        timeCreate: -1
+                    }
                 }
             )
             Group.aggregate(pipeList).then((document) => {
@@ -235,6 +242,7 @@ export default class GroupController {
                         topicName: '$frames.topic',
                         timeCreate: 1,
                         files: 1,
+                        groupName: 1,
                         videoLink: { $ifNull: ["$videoLink", ""] },
                         timeTeaching: { $ifNull: ["$timeTeaching", ""] },
                         manager: {
@@ -273,6 +281,7 @@ export default class GroupController {
                         topicName: { $first: "$topicName" },
                         videoLink: { $first: "$videoLink" },
                         timeTeaching: { $first: "$timeTeaching" },
+                        groupName: { $first: "$groupName" },
                         userJoinGroup: {
                             $push: {
                                 userName: "$userJoinGroup.userName",

@@ -4,6 +4,7 @@ let Group = new mongoose.Schema({
     userJoin: [{ type: mongoose.Schema.ObjectId}],
     managerId: { type: mongoose.Schema.ObjectId },
     topicId: { type: mongoose.Schema.ObjectId },
+    groupName: { type: String},
     groupCode: { type: String},
     image: {type: String},
     timeTeaching: { type: String },
