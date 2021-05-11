@@ -292,6 +292,7 @@ export default class SocketConnection {
                   RedisConnection.getData(parseId, process.env.KEY_SOCKET).then((volunteerSocketIds) => {
                     if (volunteerSocketIds.length > 0) {
                       let dataVolunteer = SocketConnection.formatMessage(null, volunteer)
+                      dataVolunteer._id = volunteer._id;
                       for (let volunteerSocketId of volunteerSocketIds) {
                         ws.to(volunteerSocketId).emit('pairing', dataVolunteer)
                       }
@@ -363,7 +364,7 @@ export default class SocketConnection {
       email: user.email,
     };
     if (HttpStatus != null) {
-      data.timeSend = HttpStatus.entity.timeSend,
+        data.timeSend = HttpStatus.entity.timeSend,
         data.message = HttpStatus.entity.message,
         data.authorId = HttpStatus.entity.authorId
     }
@@ -395,6 +396,19 @@ export default class SocketConnection {
             }
           }
         })
+        //delete free time mode
+        if(data.topics){
+          data.topics.map(topic=>{
+            RedisConnection.getList(topic).then((arrUser)=>{
+              let parseId = JSON.parse(arrUser)
+              console.log(freeMode.indexOf(parseId))
+              if(freeMode.indexOf(parseId) != -1){
+                freeMode.splice(freeMode.indexOf(parseId), 1)
+                RedisConnection.setList(parseId, freeMode);
+              }
+            })
+          })
+        }
       })
     });
   }
