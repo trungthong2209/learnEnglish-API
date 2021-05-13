@@ -31,6 +31,30 @@ export default class UploadFilesHelper {
         })
         return promise
     }
+    static convertVideoToSave(data) {
+        let promise = new Promise((resolve, reject) => {
+            let bucketName = process.env.S3_NAME
+            let region = process.env.S3_REGION
+            let accessKeyId = process.env.S3_ACCESS_KEY
+            let secretAccessKey = process.env.S3_SECRET_KEY
+            let s3 = new S3({
+                region,
+                accessKeyId,
+                secretAccessKey
+            })
+                let image = new Buffer.from(data, 'base64')
+                let imageName = Date.now() + '.mp4';
+                let uploadParams = {
+                    Bucket: bucketName,
+                    Body: image,
+                    Key: imageName,
+                    ContentEncoding: 'base64',
+                    ContentType: 'video/mp4'
+                }
+                resolve(s3.upload(uploadParams).promise())
+        })
+        return promise
+    }
     static uploadCertificates(data) {
         let promise = new Promise((resolve, reject) => {
             let bucketName = process.env.S3_NAME

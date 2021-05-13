@@ -3,7 +3,10 @@ import RedisConnection from "../Helpers/RedisConnection.js";
 import Authentication from "../Helpers/Authencation.js";
 import PrivateMessageController from "./PrivateMessageController.js";
 import PublicMessageController from "./PublicMessageController.js";
-import Group from '../Models/Group.js'
+import Group from '../Models/Group.js';
+import fs from 'fs';
+
+import UploadFilesHelper from "../Helpers/UploadFilesHelper.js"
 export default class SocketConnection {
   static Initialise(httpServer) {
     let socketServer = new Server(httpServer, {
@@ -46,7 +49,7 @@ export default class SocketConnection {
             })
           }
           else {
-            let reason ='Your info is empty, pls login again';
+            let reason = 'Your info is empty, pls login again';
             ws.emit(process.env.SEND_MESSAGE_ERROR, JSON.stringify(reason));
             ws.disconnect();
           }
@@ -56,10 +59,12 @@ export default class SocketConnection {
       this.sendMessagePrivate(ws);
       this.joinGroup(ws, socketServer);
       this.leaveGroup(ws, socketServer);
-      this.sendMessagePublic(ws)
+      this.sendMessagePublic(ws);
+      this.callVideo(ws, socketServer);
+      this.freeTimeMode(ws);
+      this.matchVolunteer(ws);
+      this.recordVideo(ws);
       this.disconnectSocket(ws, userId);
-      this.freeTimeMode(ws)
-      this.matchVolunteer(ws)
     });
   }
 
@@ -205,7 +210,7 @@ export default class SocketConnection {
               let message = this.formatMessage(null, data)
               RedisConnection.setList(groupId, data._id).then(() => {
                 RedisConnection.getList(groupId).then((listUserOnline) => {
-                  console.log("list Users Online in roomId: "+groupId)
+                  console.log("list Users Online in roomId: " + groupId)
                   console.log(listUserOnline)
                   socketServer.to(groupId).emit('listUserOnline', listUserOnline)
                   ws.broadcast.to(groupId).emit("joinGroup", message);
@@ -364,7 +369,7 @@ export default class SocketConnection {
       email: user.email,
     };
     if (HttpStatus != null) {
-        data.timeSend = HttpStatus.entity.timeSend,
+      data.timeSend = HttpStatus.entity.timeSend,
         data.message = HttpStatus.entity.message,
         data.authorId = HttpStatus.entity.authorId
     }
@@ -374,6 +379,7 @@ export default class SocketConnection {
     ws.on("disconnect", (reason) => {
       console.log(ws.id + " disconnected by reason: " + reason);
       RedisConnection.getData(userId, process.env.INFO_USER).then((data) => {
+       if(data != null){
         RedisConnection.getData(userId, process.env.KEY_SOCKET).then((wsIds) => {
           if (wsIds != null && wsIds.length > 1) {
             if (wsIds.indexOf(ws.id) > -1) {
@@ -383,7 +389,7 @@ export default class SocketConnection {
           }
           else {
             RedisConnection.deleteKey(userId, process.env.KEY_SOCKET)
-            RedisConnection.expireHash(userId, 20)
+            RedisConnection.expireHash(userId, 60)
             if (data != null) {
               if (data.group !== null && data.group !== undefined) {
                 data.group.map((gr) => {
@@ -396,34 +402,85 @@ export default class SocketConnection {
             }
           }
         })
-        //delete free time mode
-        if(data.topics){
-          data.topics.map(topic=>{
-            RedisConnection.getList(topic).then((arrUser)=>{
-              let parseId = JSON.parse(arrUser)
-              console.log(freeMode.indexOf(parseId))
-              if(freeMode.indexOf(parseId) != -1){
-                freeMode.splice(freeMode.indexOf(parseId), 1)
-                RedisConnection.setList(parseId, freeMode);
+        if (data.topics) {
+          data.topics.map(topic => {
+            RedisConnection.checkKeyExistInList(topic, userId).then((isExits) => {
+              if(isExits == 1){
+               RedisConnection.deleteOneOfList(topic, userId);
               }
             })
           })
         }
+       }
       })
     });
   }
-  //check authencation request socket
-  static checkAccessSocket(ws) {
-    let promise = new Promise((resolve, reject) => {
-      let token = ws.handshake.auth.token;
-      let userId = Authentication.checkToken(token);
-      if (userId != null) {
-        resolve(userId)
-      }
-      else {
-        resolve(null)
-      }
+
+  static callVideo(ws, socketServer){
+    ws.on('groupCall', data => {
+      this.checkAccessSocket(ws).then((userId)=>{
+          if(userId != null){
+            RedisConnection.getData(userId, process.env.INFO_USER).then((userIsExits) => {
+              if(userIsExits != null){
+                let arrUser = [];
+                arrUser.push(data._id)
+                ws.join(data.roomId)
+                data.userName = userIsExits.userName;
+                RedisConnection.getData("groupCall", data.roomId).then((listUser)=>{
+                  if(listUser != null){
+                    listUser.push(data._id)
+                    RedisConnection.setData("groupCall", data.roomId, listUser);
+                    this.UserConnectVideo(socketServer, ws, data, listUser)
+                  }
+                  else {
+                    RedisConnection.setData("groupCall", data.roomId, arrUser)
+                    this.UserConnectVideo(socketServer, ws, data, arrUser)
+                  }
+                })
+              }
+            })
+          }
+      })
     })
-    return promise
   }
+  static UserConnectVideo(socketServer, ws, data, arr){
+     let dataSend = {
+       userId : data._id,
+       userName : data.userName,
+       listUser: arr
+     }
+     socketServer.to(data.roomId).emit('start-video', dataSend)
+    ws.on('disconnect', ()=>{
+      socketServer.in(data.roomId).emit('end-video', data._id)
+    })
+  }
+  static recordVideo(ws){
+    ws.on("sendData", data =>{
+      this.checkAccessSocket(ws).then((userId)=>{
+          Group.findOne({ _id: data.roomId }).then((group) => {
+            if(group.managerId == userId){
+              UploadFilesHelper.convertVideoToSave(data.arrayBuffer).then((video)=>{
+                group.updateOne({ $addToSet: {videoLink: video.Location } }).then((record) => {
+                  ws.emit("saveRecord", record)
+              })     
+              })
+            }
+          })
+      })
+    })
+  }
+    //check authencation request socket
+    static checkAccessSocket(ws) {
+      let promise = new Promise((resolve, reject) => {
+        let token = ws.handshake.auth.token;
+        let userId = Authentication.checkToken(token);
+        if (userId != null) {
+          resolve(userId)
+        }
+        else {
+          resolve(null)
+        }
+      })
+      return promise
+    }
 }
