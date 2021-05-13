@@ -35,6 +35,18 @@ export default class RedisConnection {
     })
     return promise
   }
+  static checkKeyExistInList(key, value) {
+    let promise = new Promise((resolve, reject) => {
+      connectRedis.sismember(JSON.stringify(key), JSON.stringify(value), (err, reply) => {
+        if (err) {
+          console.log(err)
+          reject(err.message)
+        }
+        resolve(reply)
+      })
+    })
+    return promise
+  }
   static deleteOneOfList(key, value) {
     let promise = new Promise((resolve, reject) => {
       connectRedis.SREM(JSON.stringify(key), JSON.stringify(value), (err, reply) => {
