@@ -56,6 +56,7 @@ export default class SocketConnection {
         })
       }
       console.log("user has connected: " + ws.id);
+      this.mcuArchi(ws);
       this.sendMessagePrivate(ws);
       this.joinGroup(ws, socketServer);
       this.leaveGroup(ws, socketServer);
@@ -452,7 +453,7 @@ export default class SocketConnection {
      socketServer.to(data.roomId).emit('start-video', dataSend)
     ws.on('disconnect', ()=>{
       socketServer.in(data.roomId).emit('end-video', data._id)
-    })
+    }) 
   }
   static recordVideo(ws){
     ws.on("sendData", data =>{
@@ -468,6 +469,21 @@ export default class SocketConnection {
           })
       })
     })
+  }
+  static mcuArchi(ws){
+    ws.on('join', roomid=>{
+      ws.join(roomid);
+      console.log(ws.id);
+      // ws.on('screen', (stream)=>{
+      //   console.log(stream)
+      //   ws.emit('screen', stream);
+      // })
+      ws.on('radio', (blob)=>{
+        ws.broadcast.emit('cameratag', blob);
+        ws.emit('cameratag', blob);
+      })
+    })
+ 
   }
     //check authencation request socket
     static checkAccessSocket(ws) {
