@@ -1,1 +1,0 @@
-import webrtc from 'wrtc'

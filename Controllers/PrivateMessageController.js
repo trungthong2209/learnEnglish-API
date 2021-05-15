@@ -33,12 +33,14 @@ export default class PrivateMessageController {
             pipeList.push(
                 {
                     $match: {
-                        $and:[
-                            {$or:[
-                            {uniqueId: authorId + recipientId},
-                            {uniqueId: recipientId + authorId},
-                        ]}
-                    ]   
+                        $and: [
+                            {
+                                $or: [
+                                    { uniqueId: authorId + recipientId },
+                                    { uniqueId: recipientId + authorId },
+                                ]
+                            }
+                        ]
                     }
                 },
                 {
@@ -113,7 +115,14 @@ export default class PrivateMessageController {
             pipeList.push(
                 {
                     $match: {
-                        authorId: mongoose.Types.ObjectId(authorId)
+                        $and: [
+                            {
+                                $or: [
+                                    { authorId: mongoose.Types.ObjectId(userId) },
+                                    { sendToId: mongoose.Types.ObjectId(userId) },
+                                ]
+                            }
+                        ]
                     }
                 },
                 {
@@ -124,6 +133,7 @@ export default class PrivateMessageController {
                         as: "author"
                     }
                 },
+
                 {
                     $unwind: {
                         path: '$author',
@@ -162,19 +172,19 @@ export default class PrivateMessageController {
                 },
                 {
                     $group: {
-                        _id:{
+                        _id: {
                             uniqueId: "$uniqueId",
                         },
-                            recipients:  { $first: "$recipient"} ,
-                            timeCreate:  { $first: "$timeCreate"}
+                        recipients: { $first: "$recipient" },
+                        timeCreate: { $first: "$timeCreate" }
                     }
                 },
                 {
                     $group: {
                         _id: '$_id',
-                        uniqueId : { $first: "$_id.uniqueId"},
-                        recipients:  { $first: "$recipients"} ,
-                        timeCreate:  { $first: "$timeCreate"}
+                        uniqueId: { $first: "$_id.uniqueId" },
+                        recipients: { $first: "$recipients" },
+                        timeCreate: { $first: "$timeCreate" }
                     }
                 },
                 {
