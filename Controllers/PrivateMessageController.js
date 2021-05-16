@@ -109,7 +109,7 @@ export default class PrivateMessageController {
         });
         return promise;
     }
-    static getAllMessages(authorId) {
+    static getAllMessages(userId) {
         let promise = new Promise((resolve, reject) => {
             let pipeList = [];
             pipeList.push(
