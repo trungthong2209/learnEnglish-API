@@ -112,6 +112,7 @@ export default class PrivateMessageController {
     static getAllMessages(userId) {
         let promise = new Promise((resolve, reject) => {
             let pipeList = [];
+            console.log(userId)
             pipeList.push(
                 {
                     $match: {
@@ -120,11 +121,12 @@ export default class PrivateMessageController {
                                 $or: [
                                     { authorId: mongoose.Types.ObjectId(userId) },
                                     { sendToId: mongoose.Types.ObjectId(userId) },
-                                ]
+                                 ]
                             }
                         ]
                     }
                 },
+               //{ "$addFields": { "userId": { "$toObjectId": "$userId" } } },
                 {
                     $lookup: {
                         from: "users",
@@ -158,6 +160,13 @@ export default class PrivateMessageController {
                     $project: {
                         _id: 1,
                         uniqueId: 1,
+                        authors: {
+                            $ifNull: [{
+                                authorName: '$author.userName',
+                                authorNameId: '$author._id',
+                                authorAvatar: '$author.avatar',
+                            }, ""]
+                        },
                         recipient: {
                             $ifNull: [{
                                 recipientName: '$recipient.userName',
@@ -176,7 +185,8 @@ export default class PrivateMessageController {
                             uniqueId: "$uniqueId",
                         },
                         recipients: { $first: "$recipient" },
-                        timeCreate: { $first: "$timeCreate" }
+                        timeCreate: { $first: "$timeCreate" },
+                        authors: { $first: "$authors" }
                     }
                 },
                 {
@@ -184,7 +194,8 @@ export default class PrivateMessageController {
                         _id: '$_id',
                         uniqueId: { $first: "$_id.uniqueId" },
                         recipients: { $first: "$recipients" },
-                        timeCreate: { $first: "$timeCreate" }
+                        timeCreate: { $first: "$timeCreate" },
+                        author: { $first: "$authors" }
                     }
                 },
                 {
