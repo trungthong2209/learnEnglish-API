@@ -20,6 +20,7 @@
     "formidable": "^1.2.2",
     "fs": "0.0.1-security",
     "jsonwebtoken": "^8.5.1",
+    "kurento-client": "^6.16.0",
     "mongoose": "^5.11.15",
     "morgan": "~1.9.1",
     "multiparty": "^4.2.2",
