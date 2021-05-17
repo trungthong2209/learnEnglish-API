@@ -8,13 +8,12 @@ let CourseVocabulary = new mongoose.Schema({
         type: { type: String},
         pronounce: { type: String },
         means: { type: String},
-        Picture: { type: String },
+        picture: { type: String },
         fileListen : {type: String},
     }],
     userCreate: { type: mongoose.Schema.ObjectId },
     timeCreate: { type: Number, default: Date.now },
     timeUpdate: { type: Date },
-    highScore: {type: mongoose.Schema.ObjectId},
 });
 CourseVocabulary.index({'timeCreate': 1 })
 

@@ -32,6 +32,68 @@ router.post("/", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
+router.post("/insertCourseVocabulary", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let userEntity = user.entity;
+        Courses.insertCourseVocabulary(req, res, userEntity)
+                .then((httpStatus) => {
+                   RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+       })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
+router.post("/tickVocabularyOfUser", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let userId = user.entity._id;
+        let data = req.body;
+        Courses.tickVocabularyOfUser(userId, data)
+                .then((httpStatus) => {
+                   RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+       })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
+router.get("/tickVocabularyOfUser/:id", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let userId = user.entity._id;
+        let courseId = req.params.id;
+        Courses.getTickVocabularyOfUser(courseId, userId)
+                .then((httpStatus) => {
+                   RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+       })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
+router.get("/getCourseByUserId/:id", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let userId = req.params.id;
+        Courses.getCourseByUserId(userId)
+                .then((httpStatus) => {
+                   RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+       })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
 router.delete("/delete-course-id", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
             let id = req.body.courseId;
