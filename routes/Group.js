@@ -32,6 +32,36 @@ router.get("/getGroupsById/:id", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
+router.get("/getGroupsByTopicId/:id", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let topicId = req.params.id;
+            Group.getGroupByTopicId(topicId)
+                .then((httpStatus) => {
+                    RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+        })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
+router.get("/getGroupsByUserId/:id", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let userId = req.params.id;
+            Group.getDetailGroupByUserId(userId)
+                .then((httpStatus) => {
+                    RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+        })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
 router.post("/insert-group", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
             let data = req.body;

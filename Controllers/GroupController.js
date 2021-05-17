@@ -303,7 +303,222 @@ export default class GroupController {
         });
         return promise;
     }
+    static getGroupByTopicId(topicId) {
+        let promise = new Promise((resolve, reject) => {
+            let pipeList = [];
+            pipeList.push(
+                {
+                    $match: {
+                        topicId: mongoose.Types.ObjectId(topicId)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "managerId",
+                        foreignField: "_id",
+                        as: "manager"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$manager',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "frames",
+                        localField: "topicId",
+                        foreignField: "_id",
+                        as: "frames"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$frames',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        groupCode: 1,
+                        image: 1,
+                        userJoin: { $ifNull: ["$userJoin", ""] },
+                        topicId: '$frames._id',
+                        topicName: '$frames.topic',
+                        timeCreate: 1,
+                        files: 1,
+                        groupName: 1,
+                        videoLink: { $ifNull: ["$videoLink", ""] },
+                        timeTeaching: { $ifNull: ["$timeTeaching", ""] },
+                        manager: {
+                            $ifNull: [{
+                                managerName: '$manager.userName',
+                                managerId: '$manager._id',
+                                managerAvatar: '$manager.avatar',
+                                managerEmail: '$manager.email'
+                            }, ""]
+                        },
 
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "userJoin",
+                        foreignField: "_id",
+                        as: "userJoinGroup"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$userJoinGroup',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        groupCode: { $first: "$groupCode" },
+                        files: { $first: "$files" },
+                        manager: { $first: "$manager" },
+                        image: { $first: "$image" },
+                        topicId: { $first: "$topicId" },
+                        topicName: { $first: "$topicName" },
+                        videoLink: { $first: "$videoLink" },
+                        timeTeaching: { $first: "$timeTeaching" },
+                        groupName: { $first: "$groupName" },
+                        userJoinGroup: {
+                            $push: {
+                                userName: "$userJoinGroup.userName",
+                                userId: "$userJoinGroup._id",
+                                email: "$userJoinGroup.email",
+                                avatar: "$userJoinGroup.avatar"
+                            }
+                        }
+                    },
+                }
+            )
+            Group.aggregate(pipeList).then((document) => {
+                let httpStatus = new HttpStatus(HttpStatus.OK, document);
+                resolve(httpStatus);
+            })
+                .catch((err) => {
+                    reject(HttpStatus.getHttpStatus(err));
+                });
+        });
+        return promise;
+    }
+    static getDetailGroupByUserId(userId) {
+        let promise = new Promise((resolve, reject) => {
+            let pipeList = [];
+            pipeList.push(
+                {
+                    $match: {
+                        userJoin: mongoose.Types.ObjectId(userId)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "managerId",
+                        foreignField: "_id",
+                        as: "manager"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$manager',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "frames",
+                        localField: "topicId",
+                        foreignField: "_id",
+                        as: "frames"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$frames',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        groupCode: 1,
+                        image: 1,
+                        userJoin: { $ifNull: ["$userJoin", ""] },
+                        topicId: '$frames._id',
+                        topicName: '$frames.topic',
+                        timeCreate: 1,
+                        files: 1,
+                        groupName: 1,
+                        videoLink: { $ifNull: ["$videoLink", ""] },
+                        timeTeaching: { $ifNull: ["$timeTeaching", ""] },
+                        manager: {
+                            $ifNull: [{
+                                managerName: '$manager.userName',
+                                managerId: '$manager._id',
+                                managerAvatar: '$manager.avatar',
+                                managerEmail: '$manager.email'
+                            }, ""]
+                        },
+
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "userJoin",
+                        foreignField: "_id",
+                        as: "userJoinGroup"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$userJoinGroup',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        groupCode: { $first: "$groupCode" },
+                        files: { $first: "$files" },
+                        manager: { $first: "$manager" },
+                        image: { $first: "$image" },
+                        topicId: { $first: "$topicId" },
+                        topicName: { $first: "$topicName" },
+                        videoLink: { $first: "$videoLink" },
+                        timeTeaching: { $first: "$timeTeaching" },
+                        groupName: { $first: "$groupName" },
+                        userJoinGroup: {
+                            $push: {
+                                userName: "$userJoinGroup.userName",
+                                userId: "$userJoinGroup._id",
+                                email: "$userJoinGroup.email",
+                                avatar: "$userJoinGroup.avatar"
+                            }
+                        }
+                    },
+                }
+            )
+            Group.aggregate(pipeList).then((document) => {
+                let httpStatus = new HttpStatus(HttpStatus.OK, document);
+                resolve(httpStatus);
+            })
+                .catch((err) => {
+                    reject(HttpStatus.getHttpStatus(err));
+                });
+        });
+        return promise;
+    }
     static randomCode() {
         let code = Date.now().toString(36).substring(2, 5) + Math.random().toString(36).substring(2, 5);
         if (code.length < 6) {

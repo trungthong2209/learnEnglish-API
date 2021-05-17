@@ -16,7 +16,6 @@ let Course = new mongoose.Schema({
     userCreate: { type: mongoose.Schema.ObjectId },
     timeCreate: { type: Number, default: Date.now },
     timeUpdate: { type: Date },
-    highScore: {type: mongoose.Schema.ObjectId},
 });
 Course.index({'timeCreate': 1 })
 
