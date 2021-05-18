@@ -47,6 +47,20 @@ router.post("/insertCourseVocabulary", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
+router.get("/getAllCourseVocabulary", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+            Courses.getAllCourseVocabulary()
+                .then((httpStatus) => {
+                    RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+        })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
 router.post("/tickVocabularyOfUser", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
         let userId = user.entity._id;
