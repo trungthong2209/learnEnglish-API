@@ -123,6 +123,27 @@ export default class QuizzController {
         });
         return promise;
     }
+    static getAllCourseVocabulary() {
+        let promise = new Promise((resolve, reject) => {
+            CourseVocabulary.find({}).then((courseVocabulary) => {
+                if (courseVocabulary != undefined) {
+                    let httpStatus = new HttpStatus(HttpStatus.OK, courseVocabulary);
+                    resolve(httpStatus);
+                }
+                else {
+                    let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                    rejectStatus.message = 'NOT_FOUND';
+                    reject(rejectStatus);
+                }
+            })
+                .catch((err) => {
+                    let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
+                    rejectStatus.message = err.message;
+                    reject(rejectStatus);
+                });
+        });
+        return promise;
+    }
     static getTickVocabularyOfUser(CourseId, id) {
         let promise = new Promise((resolve, reject) => {
             let pipeList = [];
