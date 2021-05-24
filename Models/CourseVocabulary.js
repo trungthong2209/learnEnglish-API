@@ -1,8 +1,7 @@
 import mongoose from 'mongoose';
 
 let CourseVocabulary = new mongoose.Schema({
-    nameCouse: {type: String},
-    description: {type: String},
+    courseId: {type: String},
     vocabularys : [{
         vocabulary: { type: String },
         type: { type: String},

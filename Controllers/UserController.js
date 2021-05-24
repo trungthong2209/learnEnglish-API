@@ -254,12 +254,6 @@ export default class UserController {
                     },
                 }
             )
-            RedisConnection.getData(userId, process.env.GROUP_OF_USER).then((groupsOfUser) => {
-                if (groupsOfUser != null) {
-                    let httpStatus = new HttpStatus(HttpStatus.OK, groupsOfUser);
-                    resolve(httpStatus);
-                }
-                else {
                     User.aggregate(pipeList).then((document) => {
                         RedisConnection.setData(userId, process.env.GROUP_OF_USER, document)
                         let httpStatus = new HttpStatus(HttpStatus.OK, document);
@@ -267,9 +261,7 @@ export default class UserController {
                     })
                         .catch((err) => {
                             reject(HttpStatus.getHttpStatus(err));
-                        });
-                }
-            })
+                        });       
         });
         return promise;
     }
