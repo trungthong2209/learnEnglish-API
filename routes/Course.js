@@ -17,10 +17,11 @@ router.get("/", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
-router.post("/", async (req, res) => {
+router.post("/createCourse", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
-        let userEntity = user.entity;
-        Courses.insertCourse(req, res, userEntity)
+        let userEntity = user.entity._id;
+        let data = req.body;
+        Courses.createCourse(data, userEntity)
                 .then((httpStatus) => {
                    RouteHelper.processResponse(res, httpStatus);
                 })
@@ -32,7 +33,22 @@ router.post("/", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
-router.post("/insertCourseVocabulary", async (req, res) => {
+router.post("/insertCourseQuestion/:id", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let userEntity = user.entity;
+        Courses.insertCourseQuestion(req, res, userEntity)
+                .then((httpStatus) => {
+                   RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+       })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
+router.post("/insertCourseVocabulary/:id", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
         let userEntity = user.entity;
         Courses.insertCourseVocabulary(req, res, userEntity)
@@ -47,9 +63,25 @@ router.post("/insertCourseVocabulary", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
-router.get("/getAllCourseVocabulary", async (req, res) => {
+router.get("/getCourseVocabulary/:id", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
-            Courses.getAllCourseVocabulary()
+            let courseId = req.params.id;
+            Courses.getCourseVocabulary(courseId)
+                .then((httpStatus) => {
+                    RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+        })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
+router.get("/getCourseQuestion/:id", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+            let courseId = req.params.id;
+            Courses.getCourseQuestion(courseId)
                 .then((httpStatus) => {
                     RouteHelper.processResponse(res, httpStatus);
                 })

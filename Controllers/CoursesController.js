@@ -1,3 +1,4 @@
+import CourseQuestion from "../Models/CourseQuestion.js";
 import Course from "../Models/Course.js";
 import HttpStatus from "../Helpers/HttpStatus.js";
 import IsoDateHelper from "../Helpers/IsoDateHelper.js";
@@ -8,79 +9,125 @@ import CourseOfUser from "../Models/CourseOfUser.js";
 import mongoose from 'mongoose';
 
 export default class QuizzController {
-    static insertCourse(req, res, user) {
+    static createCourse(data, userId) {
         let promise = new Promise((resolve, reject) => {
             let newCourse = new Course();
-            newCourse.nameCouse = req.body.nameCouse;
-            newCourse.description = req.body.description;
-            newCourse.userCreate = user._id;
-            RedisConnection.getData(user._id, process.env.INFO_USER).then((isUser)=>{
-                if(isUser.role == "student"){
+            newCourse.nameCouse = data.nameCouse;
+            newCourse.description = data.description;
+            newCourse.userCreate = userId;
+            RedisConnection.getData(userId, process.env.INFO_USER).then((isUser) => {
+                if (isUser.role == "student" || isUser.role == "teacher") {
                     let httpStatusStaff = new HttpStatus(HttpStatus.FORBIDDEN, null);
                     resolve(httpStatusStaff);
                 }
                 else {
-                    UploadFilesHelper.readFilesExcel(req, res).then((data) => {
-                        if(data != null)
-                        {
-                            newCourse.quizz = data;
-                            newCourse.save()
-                                .then((document) => {
-                                    let httpStatusStaff = new HttpStatus(HttpStatus.OK, document);
-                                    resolve(httpStatusStaff);
-                                })
-                                .catch((err) => {
-                                    let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
-                                    rejectStatus.message = err;
-                                    reject(rejectStatus);
-                                });
-                        }
-                        else {
-                            let message = 'Invalid file, pls check file again';
-                            let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, message);
+                    newCourse.save()
+                        .then((course) => {
+                            let httpStatusStaff = new HttpStatus(HttpStatus.OK, course);
+                            resolve(httpStatusStaff);
+                        })
+                        .catch((err) => {
+                            let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
+                            rejectStatus.message = err;
                             reject(rejectStatus);
-                        }
-                    })
+                        });
                 }
             })
         });
         return promise;
     }
+    static insertCourseQuestion(req, res, user) {
+        let promise = new Promise((resolve, reject) => {
+            let courseId = req.params.id
+            Course.findById(courseId).then((course)=>{
+                if(course == null){
+                    let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                    reject(rejectStatus);
+                }
+                let newCourse = new CourseQuestion();
+                newCourse.userCreate = user._id;
+                newCourse.courseId = course._id;
+                RedisConnection.getData(user._id, process.env.INFO_USER).then((isUser) => {
+                    if (isUser.role == "student") {
+                        let httpStatusStaff = new HttpStatus(HttpStatus.FORBIDDEN, null);
+                        resolve(httpStatusStaff);
+                    }
+                    else {
+                        UploadFilesHelper.readFilesExcel(req, res).then((data) => {
+                            if (data != null) {
+                                newCourse.quizz = data;
+                                newCourse.save()
+                                    .then((document) => {
+                                        let httpStatusStaff = new HttpStatus(HttpStatus.OK, document);
+                                        resolve(httpStatusStaff);
+                                    })
+                                    .catch((err) => {
+                                        let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
+                                        rejectStatus.message = err;
+                                        reject(rejectStatus);
+                                    });
+                            }
+                            else {
+                                let message = 'Invalid file, pls check file again';
+                                let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, message);
+                                reject(rejectStatus);
+                            }
+                        })
+                    }
+                })
+            })
+            .catch((err) => {
+                let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, err);
+                reject(rejectStatus);
+            });
+        });
+        return promise;
+    }
     static insertCourseVocabulary(req, res, user) {
         let promise = new Promise((resolve, reject) => {
-            let newCourse = new CourseVocabulary();
-            newCourse.nameCouse = req.body.nameCouse;
-            newCourse.description = req.body.description;
-            newCourse.userCreate = user._id;
-            RedisConnection.getData(user._id, process.env.INFO_USER).then((isUser)=>{
-                if(isUser.role == "student"){
-                    let httpStatusStaff = new HttpStatus(HttpStatus.FORBIDDEN, null);
-                    resolve(httpStatusStaff);
+            let courseId = req.params.id;
+            Course.findById(courseId).then((course)=>{
+                if(course == null){
+                    let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                    reject(rejectStatus);
                 }
-                else {
-                    UploadFilesHelper.readFilesExcelVocabulary(req, res).then((data) => {
-                        if(data != null)
-                        {
-                            newCourse.vocabularys = data;
-                            newCourse.save()
-                                .then((document) => {
-                                    let httpStatusStaff = new HttpStatus(HttpStatus.OK, document);
-                                    resolve(httpStatusStaff);
-                                })
-                                .catch((err) => {
-                                    let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
-                                    rejectStatus.message = err;
-                                    reject(rejectStatus);
-                                });
-                        }
-                        else {
-                            let message = 'Invalid file, pls check file again';
-                            let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, message);
-                            reject(rejectStatus);
-                        }
-                    })
-                }
+                let newCourse = new CourseVocabulary();
+                newCourse.userCreate = user._id;
+                newCourse.courseId = course._id;
+                RedisConnection.getData(user._id, process.env.INFO_USER).then((isUser) => {
+                    if (isUser.role == "student") {
+                        let httpStatusStaff = new HttpStatus(HttpStatus.FORBIDDEN, null);
+                        resolve(httpStatusStaff);
+                    }
+                    else {
+                        UploadFilesHelper.readFilesExcelVocabulary(req, res).then((data) => {
+                            if (data != null) {
+                                newCourse.vocabularys = data;
+                                newCourse.save()
+                                    .then((document) => {
+                                        let httpStatusStaff = new HttpStatus(HttpStatus.OK, document);
+                                        resolve(httpStatusStaff);
+                                    })
+                                    .catch((err) => {
+                                        let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
+                                        rejectStatus.message = err;
+                                        reject(rejectStatus);
+                                    });
+                            }
+                            else {
+                                let message = 'Invalid file, pls check file again';
+                                let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, message);
+                                reject(rejectStatus);
+                            }
+                        })
+                    }
+                })
             })
+            .catch((err) => {
+                let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, err);
+                reject(rejectStatus);
+            });
+            //end
         });
         return promise;
     }
@@ -90,15 +137,15 @@ export default class QuizzController {
             courseOfUser.userId = userId;
             courseOfUser.timeUpdate = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
             courseOfUser.save()
-            .then((document) => {
-                let httpStatusStaff = new HttpStatus(HttpStatus.OK, document);
-                resolve(httpStatusStaff);
-            })
-            .catch((err) => {
-                let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
-                rejectStatus.message = err;
-                reject(rejectStatus);
-            });
+                .then((document) => {
+                    let httpStatusStaff = new HttpStatus(HttpStatus.OK, document);
+                    resolve(httpStatusStaff);
+                })
+                .catch((err) => {
+                    let rejectStatus = new HttpStatus(HttpStatus.BAD_REQUEST, null);
+                    rejectStatus.message = err;
+                    reject(rejectStatus);
+                });
         });
         return promise;
     }
@@ -123,9 +170,30 @@ export default class QuizzController {
         });
         return promise;
     }
-    static getAllCourseVocabulary() {
+    static getCourseVocabulary(courseId) {
         let promise = new Promise((resolve, reject) => {
-            CourseVocabulary.find({}).then((courseVocabulary) => {
+            CourseVocabulary.find({courseId: courseId}).then((courseVocabulary) => {
+                if (courseVocabulary != undefined) {
+                    let httpStatus = new HttpStatus(HttpStatus.OK, courseVocabulary);
+                    resolve(httpStatus);
+                }
+                else {
+                    let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                    rejectStatus.message = 'NOT_FOUND';
+                    reject(rejectStatus);
+                }
+            })
+                .catch((err) => {
+                    let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
+                    rejectStatus.message = err.message;
+                    reject(rejectStatus);
+                });
+        });
+        return promise;
+    }
+    static getCourseQuestion(courseId) {
+        let promise = new Promise((resolve, reject) => {
+            CourseQuestion.find({courseId: courseId}).then((courseVocabulary) => {
                 if (courseVocabulary != undefined) {
                     let httpStatus = new HttpStatus(HttpStatus.OK, courseVocabulary);
                     resolve(httpStatus);
