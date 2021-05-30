@@ -378,4 +378,58 @@ export default class QuizzController {
         });
         return promise;
     }
+    static getScore() {
+        let promise = new Promise((resolve, reject) => {
+            let pipeList = [];
+            pipeList.push(
+                { $addFields: { "userIdObj": { "$toObjectId": "$userId" } } },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "userIdObj",
+                        foreignField: "_id",
+                        as: "scoreofuser"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$scoreofuser',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        timeCreate: 1,
+                        highScore: 1,
+                        courseVocabularyId: 1,
+                        user: {
+                            $ifNull: [{
+                                nameUser: '$scoreofuser.userName',
+                                email: '$scoreofuser.email',
+                                avatar: '$scoreofuser.avatar',
+                            }, ""]
+                        },
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            courseVocabularyId: "$courseVocabularyId",
+                        },
+                        user: { $first: "$user" },
+                        score: {$sum: "$highScore"}
+                    },
+                }
+            )
+            CourseOfUser.aggregate(pipeList).then((document) => {
+                let httpStatus = new HttpStatus(HttpStatus.OK, document);
+                resolve(httpStatus);
+            })
+                .catch((err) => {
+                    reject(HttpStatus.getHttpStatus(err));
+                });
+        });
+        return promise;
+    }
 }

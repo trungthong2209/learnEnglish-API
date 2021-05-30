@@ -290,7 +290,6 @@ export default class SocketConnection {
             if (ws.connected == false) {
               return clearInterval(match)
             }
-            console.log("matching..." + topicId)
             RedisConnection.getList(topicId).then((arrVolunteer) => {
               if (arrVolunteer.length > 0) {
                 let parseId = JSON.parse(arrVolunteer[0])

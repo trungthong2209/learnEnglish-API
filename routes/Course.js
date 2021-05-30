@@ -170,4 +170,18 @@ router.get("/get-course-id/:id", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
+router.get("/highscores", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+            Courses.getScore()
+                .then((httpStatus) => {
+                    RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+        })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
 export default router;
