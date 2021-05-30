@@ -403,6 +403,7 @@ export default class QuizzController {
                         timeCreate: 1,
                         highScore: 1,
                         courseVocabularyId: 1,
+                        userId : 1,
                         user: {
                             $ifNull: [{
                                 nameUser: '$scoreofuser.userName',
@@ -415,7 +416,7 @@ export default class QuizzController {
                 {
                     $group: {
                         _id: {
-                            courseVocabularyId: "$courseVocabularyId",
+                            userId: "$userId",
                         },
                         user: { $first: "$user" },
                         score: {$sum: "$highScore"}
