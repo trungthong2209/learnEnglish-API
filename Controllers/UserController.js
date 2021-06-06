@@ -41,53 +41,52 @@ export default class UserController {
     }
     static updateUser(_id, data) {
         let promise = new Promise((resolve, reject) => {
-            User.findOne({ _id: _id}).then( async (user) => {
+            User.findOne({ _id: _id }).then(async (user) => {
                 if (user != undefined) {
                     let updateUser = data;
                     let imageURI = await UploadFileHelper.convertImageToSave(data);
-                    if(imageURI != null){
+                    if (imageURI != null) {
                         updateUser.avatar = imageURI.Location;
                     }
-                    if(data.certificates != null){
+                    if (data.certificates != null) {
                         let uriCertificates = await UploadFileHelper.uploadCertificates(data);
-                        if(updateUser.certificates != null)
-                        {
+                        if (updateUser.certificates != null) {
                             updateUser.certificates.push(uriCertificates.Location);
                         }
                         else {
                             updateUser.certificates = uriCertificates.Location;
                         }
-                        
+
                     }
                     let timeUpdate = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
                     updateUser.timeUpdate = timeUpdate;
                     bcrypt.hash(data.password, 10).then((hashedPassword) => {
                         updateUser.password = hashedPassword;
                         user.updateOne(updateUser).then((modified) => {
-                                if(modified.nModified==1){
-                                    User.findOne({_id: _id}).then((newInfo)=>{
-                                        RedisConnection.getData(_id, process.env.INFO_USER).then((oldInfo)=>{
-                                            newInfo.token = oldInfo.token;
-                                            newInfo.group = oldInfo.group;
-                                            RedisConnection.setData(_id, process.env.INFO_USER, newInfo)
-                                                let httpStatusStaff = new HttpStatus(HttpStatus.OK, newInfo);
-                                                resolve(httpStatusStaff);
-                                        })
+                            if (modified.nModified == 1) {
+                                User.findOne({ _id: _id }).then((newInfo) => {
+                                    RedisConnection.getData(_id, process.env.INFO_USER).then((oldInfo) => {
+                                        newInfo.token = oldInfo.token;
+                                        newInfo.group = oldInfo.group;
+                                        RedisConnection.setData(_id, process.env.INFO_USER, newInfo)
+                                        let httpStatusStaff = new HttpStatus(HttpStatus.OK, newInfo);
+                                        resolve(httpStatusStaff);
+                                    })
                                         .catch((err) => {
                                             reject(HttpStatus.getHttpStatus(err));
                                         });
-                                    })
+                                })
                                     .catch((err) => {
                                         reject(HttpStatus.getHttpStatus(err));
                                     });
-                                }
-                                else {
-                                    RedisConnection.getData(_id, process.env.INFO_USER).then((info)=>{
-                                        let httpStatusStaff = new HttpStatus(HttpStatus.OK, info);
-                                        resolve(httpStatusStaff);
-                                    })
-                                }
-                            })
+                            }
+                            else {
+                                RedisConnection.getData(_id, process.env.INFO_USER).then((info) => {
+                                    let httpStatusStaff = new HttpStatus(HttpStatus.OK, info);
+                                    resolve(httpStatusStaff);
+                                })
+                            }
+                        })
                             .catch((err) => {
                                 reject(HttpStatus.getHttpStatus(err));
                             });
@@ -116,9 +115,9 @@ export default class UserController {
                     let timeUpdate = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
                     data.timeUpdate = timeUpdate;
                     let arrTopics = [];
-                    if(user.topics != null ){
-                         arrTopics = user.topics;
-                        if(user.topics.indexOf(data.topics) == -1){
+                    if (user.topics != null) {
+                        arrTopics = user.topics;
+                        if (user.topics.indexOf(data.topics) == -1) {
                             arrTopics.push(data.topics);
                         }
                     }
@@ -127,33 +126,73 @@ export default class UserController {
                     }
                     data.topics = arrTopics;
                     user.updateOne(data)
-                            .then(() => {
-                                console.log(user)
-                                RedisConnection.getData(data._id,process.env.INFO_USER).then((info)=>{
-                                    info.role = data.role;
-                                    info.topics = arrTopics;
-                                    RedisConnection.setData(data._id,process.env.INFO_USER, info)
-                                    let httpStatusStaff = new HttpStatus(HttpStatus.OK, info);
-                                    resolve(httpStatusStaff);
-                                })
+                        .then(() => {
+                            console.log(user)
+                            RedisConnection.getData(data._id, process.env.INFO_USER).then((info) => {
+                                info.role = data.role;
+                                info.topics = arrTopics;
+                                RedisConnection.setData(data._id, process.env.INFO_USER, info)
+                                let httpStatusStaff = new HttpStatus(HttpStatus.OK, info);
+                                resolve(httpStatusStaff);
+                            })
                                 .catch((err) => {
                                     reject(HttpStatus.getHttpStatus(err));
                                 });
-                            })
-                            .catch((err) => {
-                                reject(HttpStatus.getHttpStatus(err));
-                            });
-                    
+                        })
+                        .catch((err) => {
+                            reject(HttpStatus.getHttpStatus(err));
+                        });
+
                 } else {
                     let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
                     rejectStatus.message = 'USER IS NOT EXIST';
                     reject(rejectStatus);
                 }
             }).catch((err) => {
+                let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
+                rejectStatus.message = err.message;
+                reject(rejectStatus);
+            });
+        });
+        return promise;
+    }
+    static blockedUser(data, admin) {
+        let promise = new Promise(async (resolve, reject) => {
+            let checkAdmin = await RedisConnection.getData(admin, process.env.INFO_USER);
+            if (checkAdmin.role == "admin") {
+                User.findOne({ _id: data._id }).then((user) => {
+                    if (user != undefined) {
+                        let timeUpdate = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
+                        data.timeUpdate = timeUpdate;
+                        user.updateOne({ action: data.status })
+                            .then((results) => {
+                                if (data.status == false) {
+                                    RedisConnection.deleteHash(data._id)
+                                }
+                                let httpStatusStaff = new HttpStatus(HttpStatus.OK, results);
+                                resolve(httpStatusStaff);
+
+
+                            })
+                            .catch((err) => {
+                                reject(HttpStatus.getHttpStatus(err));
+                            });
+
+                    } else {
+                        let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                        rejectStatus.message = 'USER IS NOT EXIST';
+                        reject(rejectStatus);
+                    }
+                }).catch((err) => {
                     let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
                     rejectStatus.message = err.message;
                     reject(rejectStatus);
                 });
+            }
+            else {
+                let httpStatus = new HttpStatus(HttpStatus.FORBIDDEN, null);
+                resolve(httpStatus);
+            }
         });
         return promise;
     }
@@ -218,22 +257,22 @@ export default class UserController {
                         facebookLink: 1,
                         instagramLink: 1,
                         group: {
-                                $ifNull: [{
-                                    groupCode: '$groupOfUser.groupCode',
-                                    userJoin: { $ifNull: ["$groupOfUser.userJoin", ""] },
-                                    topic: '$topicOfGroup.topic',
-                                    timeCreate: "$groupOfUser.timeCreate",
-                                    timeTeaching: { $ifNull: ["$groupOfUser.timeTeaching", ""] },
-                                    manager: {
-                                        $ifNull: [{
-                                            managerName: '$manager.userName',
-                                            managerId: '$manager._id',
-                                            managerAvatar: '$manager.avatar',
-                                            managerEmail: '$manager.email'
-                                        }, ""]
-                                    },
-                                }, ""]
-                            
+                            $ifNull: [{
+                                groupCode: '$groupOfUser.groupCode',
+                                userJoin: { $ifNull: ["$groupOfUser.userJoin", ""] },
+                                topic: '$topicOfGroup.topic',
+                                timeCreate: "$groupOfUser.timeCreate",
+                                timeTeaching: { $ifNull: ["$groupOfUser.timeTeaching", ""] },
+                                manager: {
+                                    $ifNull: [{
+                                        managerName: '$manager.userName',
+                                        managerId: '$manager._id',
+                                        managerAvatar: '$manager.avatar',
+                                        managerEmail: '$manager.email'
+                                    }, ""]
+                                },
+                            }, ""]
+
                         },
                     }
                 },
@@ -244,8 +283,8 @@ export default class UserController {
                         email: { $first: "$email" },
                         avatar: { $first: "$avatar" },
                         sex: { $first: "$sex" },
-                        facebookLink:  { $first: "$facebookLink" },
-                        instagramLink:  { $first: "$instagramLink" },
+                        facebookLink: { $first: "$facebookLink" },
+                        instagramLink: { $first: "$instagramLink" },
                         groups: {
                             $push: {
                                 group: "$group",
@@ -254,14 +293,43 @@ export default class UserController {
                     },
                 }
             )
-                    User.aggregate(pipeList).then((document) => {
-                        RedisConnection.setData(userId, process.env.GROUP_OF_USER, document)
-                        let httpStatus = new HttpStatus(HttpStatus.OK, document);
+            User.aggregate(pipeList).then((document) => {
+                RedisConnection.setData(userId, process.env.GROUP_OF_USER, document)
+                let httpStatus = new HttpStatus(HttpStatus.OK, document);
+                resolve(httpStatus);
+            })
+                .catch((err) => {
+                    reject(HttpStatus.getHttpStatus(err));
+                });
+        });
+        return promise;
+    }
+    static getListUser(_id) {
+        let promise = new Promise(async (resolve, reject) => {
+            let checkAdmin = await RedisConnection.getData(_id, process.env.INFO_USER);
+            if (checkAdmin.role == "admin") {
+                User.find({}).then((users) => {
+                    if (users != undefined) {
+                        let httpStatus = new HttpStatus(HttpStatus.OK, users);
                         resolve(httpStatus);
-                    })
-                        .catch((err) => {
-                            reject(HttpStatus.getHttpStatus(err));
-                        });       
+                    }
+                    else {
+                        let rejectStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                        rejectStatus.message = 'NOT_FOUND';
+                        reject(rejectStatus);
+                    }
+                })
+                    .catch((err) => {
+                        let rejectStatus = new HttpStatus(HttpStatus.SERVER_ERROR, null);
+                        rejectStatus.message = err.message;
+                        reject(rejectStatus);
+                    });
+            }
+            else {
+                let httpStatus = new HttpStatus(HttpStatus.FORBIDDEN, null);
+                resolve(httpStatus);
+            }
+
         });
         return promise;
     }

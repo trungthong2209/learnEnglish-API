@@ -3,6 +3,7 @@ import HttpStatus from "../Helpers/HttpStatus.js";
 import UploadFilesHelper from '../Helpers/UploadFilesHelper.js'
 import RedisConnection from "../Helpers/RedisConnection.js";
 import mongoose from 'mongoose';
+import IsoDateHelper from "../Helpers/IsoDateHelper.js";
 export default class GroupController {
     static uploadFiles(req, res) {
         let promise = new Promise((resolve, reject) => {
@@ -90,6 +91,11 @@ export default class GroupController {
         let promise = new Promise((resolve, reject) => {
             let pipeList = [];
             pipeList.push(
+                {
+                    $match: {
+                        action: true
+                    }
+                },
                 {
                     $lookup: {
                         from: "users",
@@ -512,6 +518,34 @@ export default class GroupController {
             Group.aggregate(pipeList).then((document) => {
                 let httpStatus = new HttpStatus(HttpStatus.OK, document);
                 resolve(httpStatus);
+            })
+                .catch((err) => {
+                    reject(HttpStatus.getHttpStatus(err));
+                });
+        });
+        return promise;
+    }
+    static editGroup(body) {
+        let promise = new Promise(async (resolve, reject) => {
+            Group.findOne({ _id: body._id }).then(async (group) => {
+                if (group != null) {
+                   let newImage = await UploadFilesHelper.convertImageToSave(body);
+                   body.timeUpdate = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh');
+                   if(newImage != null){
+                    body.image = newImage.Location;
+                   }
+                        group.updateOne(body).then((data) => {
+                                let httpStatus = new HttpStatus(HttpStatus.OK, data);
+                                resolve(httpStatus);
+                            })
+                                .catch((err) => {
+                                    reject(HttpStatus.getHttpStatus(err));
+                                });
+                }
+                else {
+                    let httpStatus = new HttpStatus(HttpStatus.NOT_FOUND, null);
+                    resolve(httpStatus);
+                }
             })
                 .catch((err) => {
                     reject(HttpStatus.getHttpStatus(err));

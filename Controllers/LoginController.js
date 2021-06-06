@@ -13,7 +13,9 @@ export default class LoginController {
                     if (user != undefined) {
                         bcrypt.compare(data.password, user.password).then((isMath) => {
                             if (isMath) {
-                                const payload = {
+                                if(user.action == true)
+                                {
+                                 const payload = {
                                     _id: user._id
                                 };
                                 jwt.sign(
@@ -39,6 +41,12 @@ export default class LoginController {
                                         }
                                     }
                                 );
+                                }
+                                else {
+                                    let rejectStatus = new HttpStatus(HttpStatus.FORBIDDEN, null);
+                                    rejectStatus.message = 'YOUR ACCOUNT HAS BEEN BLOCKED';
+                                    reject(rejectStatus);
+                                }
                             } else {
                                 let rejectStatus = new HttpStatus(HttpStatus.UNAUTHORISED, null);
                                 rejectStatus.message = 'PASSWORD INCORECT!';

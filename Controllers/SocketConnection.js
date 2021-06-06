@@ -300,6 +300,7 @@ export default class SocketConnection {
                       dataVolunteer._id = volunteer._id;
                       for (let volunteerSocketId of volunteerSocketIds) {
                         ws.to(volunteerSocketId).emit('pairing', dataVolunteer)
+                        console.log(dataVolunteer);
                       }
                       RedisConnection.deleteOneOfList(topicId, parseId)
                       ws.emit('pairing', dataVolunteer)

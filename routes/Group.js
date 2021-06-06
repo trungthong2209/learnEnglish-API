@@ -47,6 +47,21 @@ router.get("/getGroupsByTopicId/:id", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
+router.post("/editgroup", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let data = req.body;
+            Group.editGroup(data)
+                .then((httpStatus) => {
+                    RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    RouteHelper.processErrorResponse(res, err);
+                });
+        })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
 router.get("/getGroupsByUserId/:id", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
         let userId = req.params.id;
