@@ -285,7 +285,7 @@ export default class SocketConnection {
       console.log("topicId" + topicId)
       SocketConnection.checkAccessSocket(ws).then((authorId) => {
         if (authorId != null) {
-          let hearBeat = 7000; //7s
+          let hearBeat = 4000; //7s
           let match = setInterval(() => {
             if (ws.connected == false) {
               return clearInterval(match)
@@ -300,6 +300,7 @@ export default class SocketConnection {
                       dataVolunteer._id = volunteer._id;
                       for (let volunteerSocketId of volunteerSocketIds) {
                         ws.to(volunteerSocketId).emit('pairing', dataVolunteer)
+                        console.log(volunteerSocketId)
                         console.log(dataVolunteer);
                       }
                       RedisConnection.deleteOneOfList(topicId, parseId)
