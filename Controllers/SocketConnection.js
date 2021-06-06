@@ -11,7 +11,7 @@ export default class SocketConnection {
   static Initialise(httpServer) {
     let socketServer = new Server(httpServer, {
       cors: {
-        origin: [process.env.HTTP_SERVER, "https://18.117.218.129:3000", "http://18.117.218.129:3000", "http://localhost:3001", "http://localhost:3000"],
+        origin: [process.env.HTTP_SERVER, "https://freecoturn.tk/", "https://18.117.218.129:3000", "http://18.117.218.129:3000", "http://localhost:3001", "http://localhost:3000"],
         credentials: true,
         methods: ["GET, POST"],
         allowedHeaders: ['Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers']
