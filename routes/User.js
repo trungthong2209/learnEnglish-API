@@ -45,6 +45,33 @@ router.get('/profile/:id', async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 })
+router.post('/dashboard/users', async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        UserController.getListUser(user.entity._id).then((httpStatus) => {
+            RouteHelper.processResponse(res, httpStatus);
+        })
+            .catch((err) => {
+                RouteHelper.processErrorResponse(res, err);
+            });
+    })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+})
+router.post('/dashboard/updateStatus', async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {
+        let data = req.body;
+        UserController.blockedUser(data, user.entity._id).then((httpStatus) => {
+            RouteHelper.processResponse(res, httpStatus);
+        })
+            .catch((err) => {
+                RouteHelper.processErrorResponse(res, err);
+            });
+    })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+})
 router.put('/updateProfile', async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {
         let data = req.body;
