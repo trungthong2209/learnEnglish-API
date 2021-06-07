@@ -315,7 +315,8 @@ export default class GroupController {
             pipeList.push(
                 {
                     $match: {
-                        topicId: mongoose.Types.ObjectId(topicId)
+                        topicId: mongoose.Types.ObjectId(topicId),
+                        action: true
                     }
                 },
                 {
