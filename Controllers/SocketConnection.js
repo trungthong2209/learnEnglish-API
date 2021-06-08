@@ -458,9 +458,13 @@ export default class SocketConnection {
   }
   static recordVideo(ws){
     ws.on("sendData", data =>{
+      console.log("send Data")
       this.checkAccessSocket(ws).then((userId)=>{
+        console.log("user Id: "+userId );
           Group.findOne({ _id: data.roomId }).then((group) => {
+            console.log(group);
             if(group.managerId == userId){
+              console.log("==");
               UploadFilesHelper.convertVideoToSave(data.arrayBuffer).then((video)=>{
                 console.log(video)
                 group.updateOne({ $addToSet: {videoLink: video.Location } }).then((record) => {
