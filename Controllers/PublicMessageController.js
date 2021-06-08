@@ -62,7 +62,7 @@ export default class PublicMessageController{
                             }, ""]
                         },
                         message: 1,
-                        timeSend: 1,
+                        timeSend: { $dateToString: { format: "%d/%m/%Y %H:%M:%S", date: "$timeSend" } },
                     }
                 },
                 {
