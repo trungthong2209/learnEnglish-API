@@ -28,7 +28,7 @@ export default class UserController {
                                         `
                                         <h2> Hello ${userAfterSave.userName} </h2>
                                         <h2> Click on link to verify your account </h2>
-                                        <p> http://localhost:3001/verify/v1/${token} </p>
+                                        <p> http://3.131.71.201:3001/verify/v1/${token} </p>
                                        `);
                                     }
                                  )
