@@ -101,4 +101,14 @@ router.put('/updateRole', async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 })
+router.get('/verify/v1/:id', async (req, res) => {
+        let token = req.params.id;;
+        UserController.verifyUser(token).then((httpStatus) => {
+            RouteHelper.processResponse(res, httpStatus);
+        })
+            .catch((err) => {
+                RouteHelper.processErrorResponse(res, err);
+            });
+
+})
 export default router;
