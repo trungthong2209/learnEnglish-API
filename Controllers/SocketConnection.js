@@ -20,6 +20,7 @@ export default class SocketConnection {
       pingInterval: 5000,
       pingTimeout: 10000,
     });
+    socketServer.sockets.setMaxListeners(50);
     console.log("Initialising new WebSocket server...");
     socketServer.on("connection", async (ws) => {
       let userId = await SocketConnection.checkAccessSocket(ws)
