@@ -25,7 +25,6 @@ export default class LoginController {
                                     (err, token) => {
                                         if (!err) {
                                             user.token = token;
-                                            SendEmail.sendEmailService(data.email, "login", "welcome to my website");
                                             GroupController.getGroupsByUserId(user._id).then((httpStatusGroup)=>{
                                                 user.group = httpStatusGroup.entity
                                                 RedisConnection.setData(user._id, process.env.INFO_USER, user);
