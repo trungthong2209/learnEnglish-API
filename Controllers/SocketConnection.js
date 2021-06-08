@@ -459,15 +459,20 @@ export default class SocketConnection {
   static recordVideo(ws){
     ws.on("sendData", data =>{
       console.log("send Data")
+      console.log(data);
       this.checkAccessSocket(ws).then((userId)=>{
         console.log("user Id: "+userId );
           Group.findOne({ _id: data.roomId }).then((group) => {
             console.log(group);
             if(group.managerId == userId){
               console.log("==");
+              RedisConnection.deleteKey("groupCall", data.roomId);
+              console.log("deleted");
               UploadFilesHelper.convertVideoToSave(data.arrayBuffer).then((video)=>{
                 console.log(video)
                 group.updateOne({ $addToSet: {videoLink: video.Location } }).then((record) => {
+                  console.log("record: ")
+                  console.log(record);
                   ws.emit("saveRecord", record)
               })     
               })
