@@ -11,7 +11,7 @@ import RedisConnection from './Helpers/RedisConnection.js'
 import Debug from 'debug';
 const debug = Debug('Learning-English-API:server')
 import MongoHelper from './Helpers/MongoHelper.js';
-
+import events from 'events'
 //import bodyParser from 'body-parser'
 const __dirname = path.resolve();
 dotenv.config()
@@ -45,7 +45,7 @@ app.use(function (req, res, next) {
 
 //Connect database
 MongoHelper.Initialise();
-
+events.defaultMaxListeners = 50;
 //route
 app.get('/', async (req, res) => {
     res.send('Welcome to Learn English Project')
