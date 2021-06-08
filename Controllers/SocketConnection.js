@@ -462,6 +462,7 @@ export default class SocketConnection {
           Group.findOne({ _id: data.roomId }).then((group) => {
             if(group.managerId == userId){
               UploadFilesHelper.convertVideoToSave(data.arrayBuffer).then((video)=>{
+                console.log(video)
                 group.updateOne({ $addToSet: {videoLink: video.Location } }).then((record) => {
                   ws.emit("saveRecord", record)
               })     
