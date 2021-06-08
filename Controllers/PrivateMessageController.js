@@ -89,7 +89,7 @@ export default class PrivateMessageController {
                             }, ""]
                         },
                         message: 1,
-                        timeSend: 1,
+                        timeSend: { $dateToString: { format: "%d/%m/%Y %H:%M:%S", date: "$timeSend" } },
                     }
                 },
                 {
@@ -175,7 +175,7 @@ export default class PrivateMessageController {
                             }, ""]
                         },
                         message: 1,
-                        timeSend: 1,
+                        timeSend: { $dateToString: { format: "%d/%m/%Y %H:%M:%S", date: "$timeSend" } },
                         timeCreate: 1,
                     }
                 },

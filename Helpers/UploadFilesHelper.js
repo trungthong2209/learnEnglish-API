@@ -2,7 +2,7 @@ import S3 from 'aws-sdk/clients/s3.js';
 import formidable from 'formidable';
 import fs from 'fs';
 import xlsx from 'xlsx';
-
+import IsoDateHelper from "../Helpers/IsoDateHelper.js";
 export default class UploadFilesHelper {
     static convertImageToSave(data) {
         let promise = new Promise((resolve, reject) => {
@@ -43,7 +43,7 @@ export default class UploadFilesHelper {
                 secretAccessKey
             })
                 let image = new Buffer.from(data, 'base64')
-                let imageName = Date.now() + '.mp4';
+                let imageName = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh') + '.mp4';
                 let uploadParams = {
                     Bucket: bucketName,
                     Body: image,
