@@ -7,7 +7,7 @@ let User = new mongoose.Schema({
     sex: { type: String, enum: ['Nam', 'Nữ'] },
     dob: { type: Date },
     role: { type: String, enum: ['admin', 'teacher', 'student'], default: 'student'},
-    action: { type: Boolean, default: true },
+    action: { type: Boolean, default: false },
     numberPhone: { type: String },
     token: { type: String },
     score: {type: Number},

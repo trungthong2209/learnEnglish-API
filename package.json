@@ -24,6 +24,7 @@
     "mongoose": "^5.11.15",
     "morgan": "~1.9.1",
     "multiparty": "^4.2.2",
+    "nodemailer": "^6.6.1",
     "redis": "^3.0.2",
     "socket.io": "^4.0.0",
     "uuid": "^8.3.2",

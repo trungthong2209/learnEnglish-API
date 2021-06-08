@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import RedisConnection from "../Helpers/RedisConnection.js";
 import UploadFileHelper from '../Helpers/UploadFilesHelper.js'
 import IsoDateHelper from "../Helpers/IsoDateHelper.js"
+import SendEmail from "../Helpers/SendEmail.js"
+import jwt from "jsonwebtoken";
 export default class UserController {
     static register(data) {
         let promise = new Promise((resolve, reject) => {
@@ -15,6 +17,21 @@ export default class UserController {
                         newUser.password = hashedPassword;
                         newUser.save()
                             .then((userAfterSave) => {
+                                 const payload = {
+                                       _id: userAfterSave._id
+                                 }
+                                 jwt.sign(
+                                    payload,
+                                    process.env.AUTH1_APP_SECRET,
+                                    (err, token) => {
+                                        SendEmail.sendEmailService(data.email, "Xác thực tài khoản",  
+                                        `
+                                        <h2> Hello ${userAfterSave.userName} </h2>
+                                        <h2> Click on link to verify your account </h2>
+                                        <p> http://localhost:3001/verify/v1/${token} </p>
+                                       `);
+                                    }
+                                 )
                                 let httpStatusStaff = new HttpStatus(HttpStatus.OK, userAfterSave);
                                 resolve(httpStatusStaff);
                             })
@@ -38,7 +55,40 @@ export default class UserController {
                 });
         });
         return promise;
-    }
+}
+static verifyUser(token){
+    let promise = new Promise((resolve, reject) => {
+        jwt.verify(token, process.env.AUTH1_APP_SECRET, (err, decoded) => {
+            if (err) {
+                let rejectStatus = new HttpStatus(HttpStatus.NOT_ACCEPTABLE, null);
+                rejectStatus.message = err.message;
+                reject(rejectStatus);
+            }
+            else {
+                if (decoded._id) {
+                    User.findOne({ _id: decoded._id }).then((user) => {
+                        user.updateOne({action: true}).then(() => {
+                            let httpStatusStaff = new HttpStatus(HttpStatus.OK, "Verify succesfully");
+                            resolve(httpStatusStaff);
+                        })
+                        .catch((err) => {
+                            reject(HttpStatus.getHttpStatus(err));
+                        });
+                    })
+                    .catch((err) => {
+                        reject(HttpStatus.getHttpStatus(err));
+                    });
+                }
+                else {
+                    let rejectStatus = new HttpStatus(HttpStatus.UNAUTHORISED, null);
+                    rejectStatus.message = 'NOT AUTHORIZATE';
+                    reject(rejectStatus);
+                }
+            }
+        })
+    })
+    return promise
+}
     static updateUser(_id, data) {
         let promise = new Promise((resolve, reject) => {
             User.findOne({ _id: _id }).then(async (user) => {
