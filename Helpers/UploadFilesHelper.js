@@ -118,7 +118,7 @@ export default class UploadFilesHelper {
                 let uploadParams = {
                     Bucket: bucketName,
                     Body: fileContent,
-                    Key: Date.now() + '.' + file.name.split('.').pop(),
+                    Key: file.name,
                     ContentType: file.type
                 }
                 s3.upload(uploadParams, (err, data) => {
