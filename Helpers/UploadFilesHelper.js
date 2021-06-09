@@ -155,18 +155,27 @@ export default class UploadFilesHelper {
                 secretAccessKey
             })
             let fileMeta  = {};
-            let video;
+            //let video;
+            let name = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh') + '.mp4';
             form.onPart = part =>{
-                fileMeta.name = Date.now() + '.mp4';
                 fileMeta.type = part.mime;
                 part.on('data', (buffer)=>{
-                    pass.write(buffer);
-                    video = new Buffer.from(buffer, 'base64')
-                    console.log(video);
+                    //pass.write(buffer);
+                    console.log(buffer)
+                    let video = new Buffer.from(buffer, 'base64');
+                    let uploadParams = {
+                        Bucket: bucketName,
+                        Body: video,
+                        Key: name,
+                        ContentEncoding: 'base64',
+                        ContentType: 'video/mp4'
+                    }
+                    resolve(s3.upload(uploadParams).promise())
+                    //console.log(video);
                })
-               part.on('end', function () {
-                pass.end()
-              })
+            //    part.on('end', function () {
+            //     pass.end()
+            //   })
             }
             form.on('error', (err) => {
                 reject(err)
@@ -177,31 +186,47 @@ export default class UploadFilesHelper {
                 reject(err)
                 
             })
-            form.parse(req, err=>{
-                if(err){
-                    console.log(err);
-                    reject(err)
-                }
-                else {
-                    console.log("2222222222")
-                    console.log(video)
-                    let uploadParams = {
-                        Bucket: bucketName,
-                        Body: video,
-                        Key: fileMeta.name,
-                        ContentEncoding: 'base64',
-                        ContentType: 'video/mp4'
-                    }
-                    s3.upload(uploadParams, (err, data) => {
-                        if (err) {
-                            console.log(err);
-                            reject(err);
-                        }
-                        resolve(data)
-                    })
-                }
+            // form.parse(req, err=>{
+            //     if(err){
+            //         console.log(err);
+            //         reject(err)
+            //     }
+            //     else {
+            //         let uploadParams = {
+            //             Bucket: bucketName,
+            //             Body: video,
+            //             Key: name,
+            //             ContentEncoding: 'base64',
+            //             ContentType: 'video/mp4'
+            //         }
+            //         resolve(s3.upload(uploadParams).promise())
+            //     }
                 
+            // })
+        })
+        return promise
+    }
+    static convertVideoToSave(data) {
+        let promise = new Promise((resolve, reject) => {
+            let bucketName = process.env.S3_NAME
+            let region = process.env.S3_REGION
+            let accessKeyId = process.env.S3_ACCESS_KEY
+            let secretAccessKey = process.env.S3_SECRET_KEY
+            let s3 = new S3({
+                region,
+                accessKeyId,
+                secretAccessKey
             })
+                let image = new Buffer.from(data, 'base64')
+                let imageName = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh') + '.mp4';
+                let uploadParams = {
+                    Bucket: bucketName,
+                    Body: image,
+                    Key: imageName,
+                    ContentEncoding: 'base64',
+                    ContentType: 'video/mp4'
+                }
+                resolve(s3.upload(uploadParams).promise())
         })
         return promise
     }
