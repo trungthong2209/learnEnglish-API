@@ -17,8 +17,8 @@ export default class SocketConnection {
         allowedHeaders: ['Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers']
       },
       allowEIO3: true,
-      pingInterval: 5000,
-      pingTimeout: 10000,
+      pingInterval: 10000,
+      pingTimeout: 60000,
     });
     socketServer.sockets.setMaxListeners(50);
     console.log("Initialising new WebSocket server...");
