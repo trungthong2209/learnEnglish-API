@@ -160,7 +160,7 @@ export default class UploadFilesHelper {
                 fileMeta.name = Date.now() + '.mp4';
                 fileMeta.type = part.mime;
                 part.on('data', (buffer)=>{
-                    pass.write(Buffer);
+                    pass.write(buffer);
                     video = new Buffer.from(buffer, 'base64')
                     console.log(video);
                })
