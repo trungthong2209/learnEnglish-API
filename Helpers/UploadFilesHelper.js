@@ -160,6 +160,7 @@ export default class UploadFilesHelper {
                 fileMeta.type = part.mime;
                 part.on('data', (Buffer)=>{
                     pass.write(Buffer);
+                    console.log(Buffer);
                })
                part.on('end', function () {
                 pass.end()
@@ -167,12 +168,16 @@ export default class UploadFilesHelper {
             }
             form.on('error', (err) => {
                 reject(err)
+                console.log(err);
             })
             form.on('aborted', (err) => {
+                console.log(err);
                 reject(err)
+                
             })
             form.parse(req, err=>{
                 if(err){
+                    console.log(err);
                     reject(err)
                 }
                 else {
@@ -184,6 +189,7 @@ export default class UploadFilesHelper {
                     }
                     s3.upload(uploadParams, (err, data) => {
                         if (err) {
+                            console.log(err);
                             reject(err);
                         }
                         resolve(data)

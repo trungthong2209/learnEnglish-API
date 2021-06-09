@@ -108,7 +108,7 @@ router.post("/upload-files/:id", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
-router.post("/upload-record", async (req, res) => {
+router.post("/upload-record/:id", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {   
         let userId = user.entity._id;   
         Group.saveRecord(req, res, userId).then((httpStatus) => {
