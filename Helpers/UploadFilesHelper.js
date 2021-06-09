@@ -3,6 +3,7 @@ import formidable from 'formidable';
 import fs from 'fs';
 import xlsx from 'xlsx';
 import IsoDateHelper from "../Helpers/IsoDateHelper.js";
+import { PassThrough } from 'stream';
 export default class UploadFilesHelper {
     static convertImageToSave(data) {
         let promise = new Promise((resolve, reject) => {
@@ -133,6 +134,62 @@ export default class UploadFilesHelper {
                         reject(err);
                     }
                 });
+            })
+        })
+        return promise
+    }
+    static converBufftoSave(req, res) {
+        let promise = new Promise((resolve, reject) => {
+            let form = new formidable.IncomingForm();
+            form.keepExtensions = true;
+            const pass = new PassThrough();
+            form.multiples = true;
+            form.maxFieldsSize = 100 * 1024 * 1024; //10MB
+            let bucketName = process.env.S3_NAME
+            let region = process.env.S3_REGION
+            let accessKeyId = process.env.S3_ACCESS_KEY
+            let secretAccessKey = process.env.S3_SECRET_KEY
+            let s3 = new S3({
+                region,
+                accessKeyId,
+                secretAccessKey
+            })
+            let fileMeta  = {};
+            form.onPart = part =>{
+                fileMeta.name = Date.now() + '.mp4';
+                fileMeta.type = part.mime;
+                part.on('data', (Buffer)=>{
+                    pass.write(Buffer);
+               })
+               part.on('end', function () {
+                pass.end()
+              })
+            }
+            form.on('error', (err) => {
+                reject(err)
+            })
+            form.on('aborted', (err) => {
+                reject(err)
+            })
+            form.parse(req, err=>{
+                if(err){
+                    reject(err)
+                }
+                else {
+                    let uploadParams = {
+                        Bucket: bucketName,
+                        Body: pass,
+                        Key: fileMeta.name,
+                        ContentType: fileMeta.type,
+                    }
+                    s3.upload(uploadParams, (err, data) => {
+                        if (err) {
+                            reject(err);
+                        }
+                        resolve(data)
+                    })
+                }
+                
             })
         })
         return promise

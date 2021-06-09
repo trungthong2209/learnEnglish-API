@@ -554,11 +554,13 @@ export default class GroupController {
         });
         return promise;
     }
-    static saveRecord(userId, data) {
-        let promise = new Promise(async (resolve, reject) => {
-            Group.findOne({ _id: data.roomId }).then((group) => {
+    static saveRecord(req, res, userId) {
+        let promise = new Promise((resolve, reject) => {
+            let roomId = req.params.id;
+            Group.findOne({ _id: roomId }).then((group) => {
+                console.log(group)
                 if(group.managerId == userId){
-                  UploadFilesHelper.convertVideoToSave(data.arrayBuffer).then((video)=>{
+                  UploadFilesHelper.converBufftoSave(req, res).then((video)=>{
                     console.log(video)
                     group.updateOne({ $addToSet: {videoLink: video.Location }}).then((record) => {
                         let httpStatus = new HttpStatus(HttpStatus.OK, record);
