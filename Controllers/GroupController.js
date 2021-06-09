@@ -554,6 +554,31 @@ export default class GroupController {
         });
         return promise;
     }
+    static saveRecord(userId, data) {
+        let promise = new Promise(async (resolve, reject) => {
+            Group.findOne({ _id: data.roomId }).then((group) => {
+                if(group.managerId == userId){
+                  UploadFilesHelper.convertVideoToSave(data.arrayBuffer).then((video)=>{
+                    console.log(video)
+                    group.updateOne({ $addToSet: {videoLink: video.Location }}).then((record) => {
+                        let httpStatus = new HttpStatus(HttpStatus.OK, record);
+                        resolve(httpStatus);
+                    })
+                    .catch((err) => {
+                        reject(HttpStatus.getHttpStatus(err));
+                    }); 
+                  })
+                  .catch((err) => {
+                    reject(HttpStatus.getHttpStatus(err));
+                });
+                }
+              })
+              .catch((err) => {
+                reject(HttpStatus.getHttpStatus(err));
+            });
+        });
+        return promise;
+    }
     static randomCode() {
         let code = Date.now().toString(36).substring(2, 5) + Math.random().toString(36).substring(2, 5);
         if (code.length < 6) {
