@@ -157,10 +157,19 @@ export default class UploadFilesHelper {
             let fileMeta  = {};
             let video;
             let name = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh') + '.mp4';
+            let pathFolder = '../Helpers/'+ name;
             form.on('field', (name, value)=>{
-                console.log(typeof value);
-                let videoo = new Buffer.from(value);
-                video = videoo.toString('base64')
+                 video = new Buffer.from(new Uint8Array(value));
+                let videoo = new Buffer.from(new Uint8Array(value));
+                // if (!fs.existsSync(pathFolder)){
+                //     fs.mkdirSync(pathFolder);
+                //   }
+                  const fileStream = fs.createWriteStream(pathFolder, { flags: 'a' });
+                  fileStream.write(videoo);
+                  fileStream.on("finish", () => { 
+                      console.log(pathFolder);
+                      resolve(pathFolder)
+                    });
             })
             form.on('error', (err) => {
                 reject(err)
@@ -171,23 +180,21 @@ export default class UploadFilesHelper {
                 reject(err)
                 
             })
-            form.parse(req, err=>{
-                if(err){
-                    console.log(err);
-                    reject(err)
-                }
-                else {
-                    console.log(video);
-                    let uploadParams = {
-                        Bucket: bucketName,
-                        Body: video,
-                        Key: name,
-                        ContentEncoding: 'base64',
-                        ContentType: 'video/mp4'
-                    }
-                    resolve(s3.upload(uploadParams).promise())
-                }
-            })
+            // form.parse(req, err=>{
+            //     if(err){
+            //         console.log(err);
+            //         reject(err)
+            //     }
+            //     else {
+            //         let uploadParams = {
+            //             Bucket: bucketName,
+            //             Body: video,
+            //             Key: name,
+            //             ContentType: 'video/mp4'
+            //         }
+            //         resolve(s3.upload(uploadParams).promise())
+            //     }
+            // })
         })
         return promise
     }
