@@ -155,12 +155,14 @@ export default class UploadFilesHelper {
                 secretAccessKey
             })
             let fileMeta  = {};
+            let video;
             form.onPart = part =>{
                 fileMeta.name = Date.now() + '.mp4';
                 fileMeta.type = part.mime;
-                part.on('data', (Buffer)=>{
+                part.on('data', (buffer)=>{
                     pass.write(Buffer);
-                    console.log(Buffer);
+                    video = new Buffer.from(buffer, 'base64')
+                    console.log(video);
                })
                part.on('end', function () {
                 pass.end()
@@ -181,11 +183,14 @@ export default class UploadFilesHelper {
                     reject(err)
                 }
                 else {
+                    console.log("2222222222")
+                    console.log(video)
                     let uploadParams = {
                         Bucket: bucketName,
-                        Body: pass,
+                        Body: video,
                         Key: fileMeta.name,
-                        ContentType: fileMeta.type,
+                        ContentEncoding: 'base64',
+                        ContentType: 'video/mp4'
                     }
                     s3.upload(uploadParams, (err, data) => {
                         if (err) {
