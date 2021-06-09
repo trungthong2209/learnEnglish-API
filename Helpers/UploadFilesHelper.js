@@ -157,24 +157,10 @@ export default class UploadFilesHelper {
             let fileMeta  = {};
             let video;
             let name = IsoDateHelper.getISODateByTimezone('Asia/Ho_Chi_Minh') + '.mp4';
-            // form.onPart = part =>{
-            //     fileMeta.type = part.mime;
-            //     part.on('data', (value)=>{
-            //         //pass.write(buffer);
-            //         console.log(value)
-            //         video = new Buffer.from(value, 'base64');
-            //         console.log(video)
-            //         //console.log(video);
-            //    })
-            // //    part.on('end', function () {
-            // //     pass.end()
-            // //   })
-            // }
             form.on('field', (name, value)=>{
-                console.log("name "+ name)
-                console.log("value ")
-                console.log(value)
-                video = new Buffer.from(value, 'base64');
+                console.log(typeof value);
+                let videoo = new Buffer.from(value);
+                video = videoo.toString('base64')
             })
             form.on('error', (err) => {
                 reject(err)
