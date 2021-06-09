@@ -110,9 +110,8 @@ router.post("/upload-files/:id", async (req, res) => {
 });
 router.post("/upload-record", async (req, res) => {
     Authentication.checkAccess(null, req).then((user) => {   
-        let data = req.body;
         let userId = user.entity._id;   
-        Group.saveRecord(userId, data).then((httpStatus) => {
+        Group.saveRecord(req, res, userId).then((httpStatus) => {
                     RouteHelper.processResponse(res, httpStatus);
                 })
                 .catch((err) => {
