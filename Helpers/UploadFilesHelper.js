@@ -51,7 +51,6 @@ export default class UploadFilesHelper {
                     ContentEncoding: 'base64',
                     ContentType: 'video/mp4'
                 }
-                console.log(imageName);
                 resolve(s3.upload(uploadParams).promise())
         })
         return promise

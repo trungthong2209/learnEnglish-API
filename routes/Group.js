@@ -108,4 +108,20 @@ router.post("/upload-files/:id", async (req, res) => {
             RouteHelper.noAccessToRoute(res, err);
         });
 });
+router.post("/upload-record", async (req, res) => {
+    Authentication.checkAccess(null, req).then((user) => {   
+        let data = req.body;
+        let userId = user.entity._id;   
+        Group.saveRecord(userId, data).then((httpStatus) => {
+                    RouteHelper.processResponse(res, httpStatus);
+                })
+                .catch((err) => {
+                    console.log(err)
+                    RouteHelper.processErrorResponse(res, err);
+                });
+        })
+        .catch((err) => {
+            RouteHelper.noAccessToRoute(res, err);
+        });
+});
 export default router;
